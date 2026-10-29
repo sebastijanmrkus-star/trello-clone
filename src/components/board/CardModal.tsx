@@ -9,6 +9,7 @@ import { InlineEdit } from "../InlineEdit";
 import {
   ArchiveIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
   CalendarIcon,
   CheckSquareIcon,
   CloseIcon,
@@ -85,6 +86,18 @@ export function CardModal({ card, userEmail, onClose }: { card: Card; userEmail:
             className="mr-10 w-full break-words rounded px-1 text-xl font-semibold hover:bg-white/60"
             inputClassName="mr-10 w-[calc(100%-2.5rem)] rounded px-1 text-xl font-semibold"
           />
+          <button
+            onClick={() => updateCard(card.id, { completed: !card.completed })}
+            aria-pressed={card.completed}
+            className={`mb-1 mt-1 flex items-center gap-1.5 rounded px-2.5 py-1 text-sm font-medium ${
+              card.completed
+                ? "bg-[#1f845a] text-white hover:bg-[#216e4e]"
+                : "bg-gray-200/70 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            <CheckCircleIcon className="h-4 w-4" />
+            {card.completed ? "Finished — reopen" : "Finish task"}
+          </button>
           <p className="px-1 text-sm text-gray-600">
             in list{" "}
             <button onClick={() => setPop("move")} className="underline">

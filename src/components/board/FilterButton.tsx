@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LABEL_COLORS } from "@/lib/types";
-import { useBoard, type DueFilter } from "./BoardProvider";
+import { useBoard, type DueFilter, type StatusFilter } from "./BoardProvider";
 import { Popover } from "./Popover";
 import { FilterIcon } from "../Icons";
 
@@ -11,6 +11,11 @@ const DUE_OPTIONS: [DueFilter, string][] = [
   ["overdue", "Overdue"],
   ["soon", "Due in the next day"],
   ["complete", "Marked as complete"],
+];
+
+const STATUS_OPTIONS: [StatusFilter, string][] = [
+  ["open", "Not finished"],
+  ["completed", "Finished"],
 ];
 
 export function FilterButton() {
@@ -42,7 +47,19 @@ export function FilterButton() {
             className="mb-3 w-full rounded border border-gray-300 px-2 py-1.5 outline-none focus:border-[#0c66e4]"
           />
 
-          <p className="mb-1 text-xs font-semibold text-gray-600">Due date</p>
+          <p className="mb-1 text-xs font-semibold text-gray-600">Card status</p>
+          {STATUS_OPTIONS.map(([v, label]) => (
+            <label key={v} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-gray-50">
+              <input
+                type="checkbox"
+                checked={filter.status.includes(v)}
+                onChange={() => setFilter({ ...filter, status: toggle(filter.status, v) })}
+              />
+              {label}
+            </label>
+          ))}
+
+          <p className="mb-1 mt-3 text-xs font-semibold text-gray-600">Due date</p>
           {DUE_OPTIONS.map(([v, label]) => (
             <label key={v} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-gray-50">
               <input

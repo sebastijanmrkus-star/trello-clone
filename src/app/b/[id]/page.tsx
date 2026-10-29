@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getBoards, getUser, getWorkspaces } from "@/lib/data";
 import { TopNav } from "@/components/TopNav";
 import { BoardView } from "@/components/board/BoardView";
+import { RefreshIfStale } from "@/components/RefreshIfStale";
 import {
   BOARD_COLUMNS,
   CARD_COLUMNS,
@@ -60,6 +61,7 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="flex h-dvh flex-col" style={{ background: board.background }}>
+      <RefreshIfStale renderId={crypto.randomUUID()} />
       <TopNav dark />
       <BoardView
         initial={{

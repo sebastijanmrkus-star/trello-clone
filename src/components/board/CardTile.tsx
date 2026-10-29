@@ -2,7 +2,7 @@
 
 import { DUE_STYLES, LABEL_COLORS, dueStatus, formatDue, type Card } from "@/lib/types";
 import { useBoard } from "./BoardProvider";
-import { CalendarIcon, CheckSquareIcon, CommentIcon, TextIcon } from "../Icons";
+import { CalendarIcon, CheckCircleIcon, CheckSquareIcon, CommentIcon, TextIcon } from "../Icons";
 
 export function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
   const { labelsOf, checklistProgress, commentCounts, updateCard } = useBoard();
@@ -41,7 +41,29 @@ export function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
           </div>
         )}
 
-        <p className="break-words text-gray-800">{card.title}</p>
+        <div className="flex items-start">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              updateCard(card.id, { completed: !card.completed });
+            }}
+            title={card.completed ? "Reopen task" : "Finish task"}
+            aria-label={card.completed ? "Reopen task" : "Finish task"}
+            aria-pressed={card.completed}
+            // Takes no space until hovered/focused, so unfinished titles stay aligned.
+            className={`mt-px shrink-0 overflow-hidden rounded-full transition-all ${
+              card.completed
+                ? "mr-1.5 w-4 text-[#1f845a]"
+                : "w-0 text-gray-400 opacity-0 hover:text-[#1f845a] focus:mr-1.5 focus:w-4 focus:opacity-100 group-hover:mr-1.5 group-hover:w-4 group-hover:opacity-100"
+            }`}
+          >
+            <CheckCircleIcon filled={card.completed} className="h-4 w-4" />
+          </button>
+          <p className={`min-w-0 flex-1 break-words ${card.completed ? "text-gray-500 line-through" : "text-gray-800"}`}>
+            {card.title}
+          </p>
+        </div>
 
         {(status || card.description || comments > 0 || progress.total > 0) && (
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
