@@ -20,6 +20,7 @@ export type Card = {
   due_complete: boolean;
   cover: string | null;
   archived: boolean;
+  completed: boolean;
   created_at: string;
 };
 export type Label = { id: string; board_id: string; name: string; color: string };
@@ -31,7 +32,7 @@ export type Comment = { id: string; card_id: string; author_id: string; body: st
 export const BOARD_COLUMNS = "id, workspace_id, title, background, starred, last_viewed_at, created_at";
 export const LIST_COLUMNS = "id, board_id, title, position, archived";
 export const CARD_COLUMNS =
-  "id, board_id, list_id, title, description, position, due_at, due_complete, cover, archived, created_at";
+  "id, board_id, list_id, title, description, position, due_at, due_complete, cover, archived, completed, created_at";
 
 export const LABEL_COLORS: Record<string, string> = {
   green: "#4bce97",

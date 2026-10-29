@@ -38,6 +38,11 @@ export function AddForm({
     );
   }
 
+  function cancel() {
+    setValue("");
+    setOpen(false);
+  }
+
   const shared = {
     autoFocus: true,
     value,
@@ -48,19 +53,37 @@ export function AddForm({
         e.preventDefault();
         submit();
       }
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") cancel();
     },
     className: "w-full rounded border-0 px-2 py-1.5 text-sm text-gray-900 shadow-sm outline-none",
   };
 
   return (
-    <div className="space-y-2 rounded bg-[#ebecf0] p-1">
+    <div
+      // Like Trello, clicking away keeps what was typed instead of dropping it.
+      onBlur={(e) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+        submit();
+        setOpen(false);
+      }}
+      className="space-y-2 rounded bg-[#ebecf0] p-1"
+    >
       {multiline ? <textarea rows={3} {...shared} /> : <input {...shared} />}
       <div className="flex items-center gap-2">
-        <button onClick={submit} className="rounded bg-[#0079bf] px-3 py-1 text-sm text-white hover:bg-[#026aa7]">
+        {/* preventDefault keeps focus in the text box, so these clicks never count as clicking away. */}
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={submit}
+          className="rounded bg-[#0079bf] px-3 py-1 text-sm text-white hover:bg-[#026aa7]"
+        >
           Add
         </button>
-        <button onClick={() => setOpen(false)} className="px-2 text-xl text-gray-600" aria-label="Cancel">
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={cancel}
+          className="px-2 text-xl text-gray-600"
+          aria-label="Cancel"
+        >
           ×
         </button>
       </div>

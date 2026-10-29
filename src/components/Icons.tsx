@@ -51,3 +51,7 @@ export const PencilIcon = ({ className }: P) => svg(className, <path d="M4 20h4L
 export const MenuIcon = ({ className }: P) => svg(className, <path d="M4 6h16M4 12h16M4 18h16" />);
 export const ChevronLeftIcon = ({ className }: P) => svg(className, <path d="m15 6-6 6 6 6" />);
 export const ChevronRightIcon = ({ className }: P) => svg(className, <path d="m9 6 6 6-6 6" />);
+export const CheckCircleIcon = ({ className, filled }: P & { filled?: boolean }) =>
+  filled
+    ? svg(className, <><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none" /><path d="m7.5 12.5 3 3 6-6.5" stroke="white" /></>)
+    : svg(className, <><circle cx="12" cy="12" r="9.5" /><path d="m7.5 12.5 3 3 6-6.5" /></>);

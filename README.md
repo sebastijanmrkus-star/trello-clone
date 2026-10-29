@@ -11,10 +11,11 @@ Next.js 15 (App Router) + Supabase (Postgres, Auth, Row Level Security).
 - Responsive Kanban board: lists snap one-per-screen on phones, drag and drop on desktop and touch
 - Lists: create, rename, reorder, copy, move all cards, sort, archive / restore
 - Cards: create, edit, drag between lists, move / copy to any list and position, archive / restore, delete
+- Finish task: mark cards finished from the card or its detail window; filter by finished / not finished
 - Color-coded labels (default set per board, create / rename / recolor / delete), shown on cards
 - Due dates with complete / due soon / overdue states, checklists with progress, card covers
 - Comments on cards, description, badges for description / comments / checklist progress
-- Board filters by keyword, label and due date
+- Board filters by keyword, label, due date and finished status
 - Each user only sees their own boards (RLS)
 
 ## Setup

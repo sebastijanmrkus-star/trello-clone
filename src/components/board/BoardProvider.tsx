@@ -27,11 +27,12 @@ export type BoardData = {
 };
 
 export type DueFilter = "overdue" | "soon" | "none" | "complete";
-export type Filter = { keyword: string; labelIds: string[]; due: DueFilter[] };
+export type StatusFilter = "open" | "completed";
+export type Filter = { keyword: string; labelIds: string[]; due: DueFilter[]; status: StatusFilter[] };
 export type SortMode = "newest" | "oldest" | "name" | "due";
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
-const EMPTY_FILTER: Filter = { keyword: "", labelIds: [], due: [] };
+const EMPTY_FILTER: Filter = { keyword: "", labelIds: [], due: [], status: [] };
 
 function useBoardState(initial: BoardData) {
   const router = useRouter();
@@ -79,7 +80,8 @@ function useBoardState(initial: BoardData) {
     const ids = new Set(cardLabels.filter((cl) => cl.card_id === cardId).map((cl) => cl.label_id));
     return labels.filter((l) => ids.has(l.id));
   };
-  const filterActive = filter.keyword.trim() !== "" || filter.labelIds.length > 0 || filter.due.length > 0;
+  const filterActive =
+    filter.keyword.trim() !== "" || filter.labelIds.length > 0 || filter.due.length > 0 || filter.status.length > 0;
 
   function matches(card: Card) {
     const kw = filter.keyword.trim().toLowerCase();
@@ -93,6 +95,7 @@ function useBoardState(initial: BoardData) {
       const ok = filter.due.some((d) => (d === "none" ? s === null : d === s));
       if (!ok) return false;
     }
+    if (filter.status.length && !filter.status.includes(card.completed ? "completed" : "open")) return false;
     return true;
   }
 
@@ -222,6 +225,7 @@ function useBoardState(initial: BoardData) {
       due_complete: false,
       cover: null,
       archived: false,
+      completed: false,
       created_at: new Date().toISOString(),
     };
     setCards((cs) => [...cs, card]);
@@ -229,7 +233,10 @@ function useBoardState(initial: BoardData) {
   }
 
   type CardPatch = Partial<
-    Pick<Card, "title" | "description" | "due_at" | "due_complete" | "cover" | "archived" | "list_id" | "position">
+    Pick<
+      Card,
+      "title" | "description" | "due_at" | "due_complete" | "cover" | "archived" | "completed" | "list_id" | "position"
+    >
   >;
   async function updateCard(id: string, patch: CardPatch) {
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, ...patch } : c)));
