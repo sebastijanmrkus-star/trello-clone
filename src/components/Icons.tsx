@@ -26,3 +26,28 @@ export const ClockIcon = ({ className }: P) => svg(className, <><circle cx="12" 
 export const CloseIcon = ({ className }: P) => svg(className, <path d="M6 6l12 12M18 6 6 18" />);
 export const ChevronDownIcon = ({ className }: P) => svg(className, <path d="m6 9 6 6 6-6" />);
 export const PlusIcon = ({ className }: P) => svg(className, <path d="M12 5v14M5 12h14" />);
+export const DotsIcon = ({ className }: P) =>
+  svg(className, <><circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /></>);
+export const FilterIcon = ({ className }: P) => svg(className, <path d="M3 5h18l-7 8v6l-4 2v-8z" />);
+export const TagIcon = ({ className }: P) =>
+  svg(className, <><path d="M3 12V4h8l10 10-8 8z" /><circle cx="7.5" cy="8.5" r="1.2" /></>);
+export const CheckSquareIcon = ({ className }: P) =>
+  svg(className, <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="m8 12 3 3 5-6" /></>);
+export const CalendarIcon = ({ className }: P) =>
+  svg(className, <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);
+export const TextIcon = ({ className }: P) => svg(className, <path d="M4 6h16M4 12h16M4 18h10" />);
+export const CommentIcon = ({ className }: P) =>
+  svg(className, <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />);
+export const ArchiveIcon = ({ className }: P) =>
+  svg(className, <><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4" /></>);
+export const ArrowRightIcon = ({ className }: P) => svg(className, <path d="M5 12h14M13 6l6 6-6 6" />);
+export const CopyIcon = ({ className }: P) =>
+  svg(className, <><rect x="8" y="8" width="13" height="13" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>);
+export const TrashIcon = ({ className }: P) =>
+  svg(className, <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />);
+export const ImageIcon = ({ className }: P) =>
+  svg(className, <><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 9h18" /></>);
+export const PencilIcon = ({ className }: P) => svg(className, <path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4" />);
+export const MenuIcon = ({ className }: P) => svg(className, <path d="M4 6h16M4 12h16M4 18h16" />);
+export const ChevronLeftIcon = ({ className }: P) => svg(className, <path d="m15 6-6 6 6 6" />);
+export const ChevronRightIcon = ({ className }: P) => svg(className, <path d="m9 6 6 6-6 6" />);
