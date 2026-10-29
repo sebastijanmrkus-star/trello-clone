@@ -8,6 +8,7 @@ import { positionBetween, type Board, type Card, type List } from "@/lib/types";
 import { InlineEdit } from "./InlineEdit";
 import { AddForm } from "./AddForm";
 import { CardModal } from "./CardModal";
+import { StarButton } from "./StarButton";
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
@@ -126,12 +127,15 @@ export function BoardView({
   return (
     <>
       <div className="flex items-center justify-between bg-black/20 px-4 py-2 text-white">
-        <InlineEdit
-          value={title}
-          onSave={renameBoard}
-          className="rounded px-2 py-1 text-lg font-bold hover:bg-white/20"
-          inputClassName="rounded px-2 py-1 text-lg font-bold text-gray-900"
-        />
+        <div className="flex items-center gap-1">
+          <InlineEdit
+            value={title}
+            onSave={renameBoard}
+            className="rounded px-2 py-1 text-lg font-bold hover:bg-white/20"
+            inputClassName="rounded px-2 py-1 text-lg font-bold text-gray-900"
+          />
+          <StarButton boardId={board.id} starred={board.starred} className="rounded p-1.5 hover:bg-white/20" />
+        </div>
         <button onClick={deleteBoard} className="rounded bg-white/20 px-3 py-1 text-sm hover:bg-red-600">
           Delete board
         </button>
