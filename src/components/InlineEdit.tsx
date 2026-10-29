@@ -24,17 +24,27 @@ export function InlineEdit({
   }
 
   if (!editing) {
+    const start = () => {
+      setDraft(value);
+      setEditing(true);
+    };
+    // A div rather than a <button>: drag-and-drop ignores drags that start on
+    // buttons, and list titles must work as drag handles.
     return (
-      <button
-        type="button"
-        onClick={() => {
-          setDraft(value);
-          setEditing(true);
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={start}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            start();
+          }
         }}
-        className={`text-left ${className ?? ""}`}
+        className={`cursor-pointer text-left ${className ?? ""}`}
       >
         {value}
-      </button>
+      </div>
     );
   }
 
