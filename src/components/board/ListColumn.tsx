@@ -32,7 +32,7 @@ export function ListColumn({
     <div
       ref={provided.innerRef}
       {...provided.draggableProps}
-      className="flex max-h-full w-[85vw] shrink-0 snap-center flex-col rounded-xl bg-[#f1f2f4] shadow sm:w-72"
+      className="flex w-[85vw] shrink-0 snap-center flex-col rounded-xl bg-[#f1f2f4] shadow sm:w-72"
     >
       <div className="relative">
         <div {...provided.dragHandleProps} className="flex items-start gap-1 px-2 pt-2">
@@ -153,7 +153,7 @@ export function ListColumn({
           <div
             ref={dp.innerRef}
             {...dp.droppableProps}
-            className={`mx-1 min-h-3 flex-1 overflow-y-auto rounded px-1 pt-1 ${snapshot.isDraggingOver ? "bg-black/5" : ""}`}
+            className={`mx-1 min-h-3 flex-1 rounded px-1 pt-1 ${snapshot.isDraggingOver ? "bg-black/5" : ""}`}
           >
             {cards.map((card, i) => (
               <Draggable draggableId={card.id} index={i} key={card.id}>
