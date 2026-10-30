@@ -2,14 +2,16 @@
 
 import { DUE_STYLES, LABEL_COLORS, dueStatus, formatDue, type Card } from "@/lib/types";
 import { useBoard } from "./BoardProvider";
+import { Avatar } from "../Avatar";
 import { CalendarIcon, CheckCircleIcon, CheckSquareIcon, CommentIcon, TextIcon } from "../Icons";
 
 export function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
-  const { labelsOf, checklistProgress, commentCounts, updateCard } = useBoard();
+  const { labelsOf, membersOf, checklistProgress, commentCounts, updateCard } = useBoard();
   const labels = labelsOf(card.id);
   const progress = checklistProgress(card.id);
   const comments = commentCounts[card.id] ?? 0;
   const status = dueStatus(card);
+  const members = membersOf(card.id);
 
   return (
     <div
@@ -65,7 +67,7 @@ export function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
           </p>
         </div>
 
-        {(status || card.description || comments > 0 || progress.total > 0) && (
+        {(status || card.description || comments > 0 || progress.total > 0 || members.length > 0) && (
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600">
             {status && card.due_at && (
               <button
@@ -101,6 +103,15 @@ export function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
               >
                 <CheckSquareIcon className="h-3.5 w-3.5" />
                 {progress.done}/{progress.total}
+              </span>
+            )}
+            {members.length > 0 && (
+              <span className="ml-auto flex -space-x-1">
+                {members.map((m) => (
+                  <span key={m.id} className="rounded-full ring-2 ring-white">
+                    <Avatar email={m.email} size="sm" />
+                  </span>
+                ))}
               </span>
             )}
           </div>

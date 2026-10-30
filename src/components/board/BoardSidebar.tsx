@@ -13,10 +13,12 @@ export function BoardSidebar({
   boards,
   workspace,
   currentId,
+  currentUserId,
 }: {
   boards: Board[];
   workspace?: Workspace;
   currentId: string;
+  currentUserId: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -49,6 +51,20 @@ export function BoardSidebar({
   }
 
   const mine = boards.filter((b) => b.workspace_id === workspace?.id);
+  const shared = boards.filter((b) => b.owner_id !== currentUserId);
+  const row = (b: Board) => (
+    <Link
+      key={b.id}
+      href={`/b/${b.id}`}
+      className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-white/20 ${
+        b.id === currentId ? "bg-white/25 font-semibold" : ""
+      }`}
+    >
+      <span className="h-4 w-6 shrink-0 rounded-sm ring-1 ring-white/30" style={{ background: b.background }} />
+      <span className="flex-1 truncate">{b.title}</span>
+      {b.starred && b.owner_id === currentUserId && <StarIcon filled className="h-3.5 w-3.5 text-[#f5cd47]" />}
+    </Link>
+  );
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-black/40 text-white backdrop-blur md:flex">
       <div className="flex items-center gap-2 border-b border-white/15 px-3 py-3">
@@ -61,21 +77,15 @@ export function BoardSidebar({
       <Link href="/" className="mx-2 mt-2 flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-white/20">
         <BoardsIcon /> All boards
       </Link>
-      <p className="px-4 pb-1 pt-4 text-xs font-semibold text-white/80">Your boards</p>
       <nav className="flex-1 overflow-y-auto px-2 pb-3">
-        {mine.map((b) => (
-          <Link
-            key={b.id}
-            href={`/b/${b.id}`}
-            className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-white/20 ${
-              b.id === currentId ? "bg-white/25 font-semibold" : ""
-            }`}
-          >
-            <span className="h-4 w-6 shrink-0 rounded-sm ring-1 ring-white/30" style={{ background: b.background }} />
-            <span className="flex-1 truncate">{b.title}</span>
-            {b.starred && <StarIcon filled className="h-3.5 w-3.5 text-[#f5cd47]" />}
-          </Link>
-        ))}
+        <p className="px-2 pb-1 pt-4 text-xs font-semibold text-white/80">Your boards</p>
+        {mine.map(row)}
+        {shared.length > 0 && (
+          <>
+            <p className="px-2 pb-1 pt-4 text-xs font-semibold text-white/80">Shared with you</p>
+            {shared.map(row)}
+          </>
+        )}
       </nav>
     </aside>
   );

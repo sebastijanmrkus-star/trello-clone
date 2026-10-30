@@ -9,6 +9,8 @@ import {
   type Board,
   type Card,
   type CardLabel,
+  type CardMember,
+  type Profile,
   type Checklist,
   type ChecklistItem,
   type Label,
@@ -24,17 +26,26 @@ export type BoardData = {
   checklists: Checklist[];
   items: ChecklistItem[];
   commentCounts: Record<string, number>;
+  /** Board owner first, then members. */
+  people: Profile[];
+  cardMembers: CardMember[];
 };
 
 export type DueFilter = "overdue" | "soon" | "none" | "complete";
 export type StatusFilter = "open" | "completed";
-export type Filter = { keyword: string; labelIds: string[]; due: DueFilter[]; status: StatusFilter[] };
+export type Filter = {
+  keyword: string;
+  labelIds: string[];
+  due: DueFilter[];
+  status: StatusFilter[];
+  memberIds: string[];
+};
 export type SortMode = "newest" | "oldest" | "name" | "due";
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
-const EMPTY_FILTER: Filter = { keyword: "", labelIds: [], due: [], status: [] };
+const EMPTY_FILTER: Filter = { keyword: "", labelIds: [], due: [], status: [], memberIds: [] };
 
-function useBoardState(initial: BoardData) {
+function useBoardState(initial: BoardData, currentUserId: string) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [board, setBoard] = useState(initial.board);
@@ -45,6 +56,8 @@ function useBoardState(initial: BoardData) {
   const [checklists, setChecklists] = useState(initial.checklists);
   const [items, setItems] = useState(initial.items);
   const [commentCounts, setCommentCounts] = useState(initial.commentCounts);
+  const [people, setPeople] = useState(initial.people);
+  const [cardMembers, setCardMembers] = useState(initial.cardMembers);
   const [filter, setFilter] = useState<Filter>(EMPTY_FILTER);
   const boardId = board.id;
 
@@ -60,6 +73,8 @@ function useBoardState(initial: BoardData) {
     setChecklists(initial.checklists);
     setItems(initial.items);
     setCommentCounts(initial.commentCounts);
+    setPeople(initial.people);
+    setCardMembers(initial.cardMembers);
   }
 
   // Run a write; on failure, report it and reload server state.
@@ -81,7 +96,11 @@ function useBoardState(initial: BoardData) {
     return labels.filter((l) => ids.has(l.id));
   };
   const filterActive =
-    filter.keyword.trim() !== "" || filter.labelIds.length > 0 || filter.due.length > 0 || filter.status.length > 0;
+    filter.keyword.trim() !== "" ||
+    filter.labelIds.length > 0 ||
+    filter.due.length > 0 ||
+    filter.status.length > 0 ||
+    filter.memberIds.length > 0;
 
   function matches(card: Card) {
     const kw = filter.keyword.trim().toLowerCase();
@@ -96,6 +115,10 @@ function useBoardState(initial: BoardData) {
       if (!ok) return false;
     }
     if (filter.status.length && !filter.status.includes(card.completed ? "completed" : "open")) return false;
+    if (filter.memberIds.length) {
+      const mine = new Set(cardMembers.filter((cm) => cm.card_id === card.id).map((cm) => cm.user_id));
+      if (!filter.memberIds.some((id) => mine.has(id))) return false;
+    }
     return true;
   }
 
@@ -317,6 +340,47 @@ function useBoardState(initial: BoardData) {
     return { done: mine.filter((i) => i.done).length, total: mine.length };
   }
 
+  // ---- people ----
+  const isOwner = board.owner_id === currentUserId;
+  const membersOf = (cardId: string) => {
+    const ids = new Set(cardMembers.filter((cm) => cm.card_id === cardId).map((cm) => cm.user_id));
+    return people.filter((p) => ids.has(p.id));
+  };
+  const emailOf = (userId: string) => people.find((p) => p.id === userId)?.email ?? "Former member";
+
+  async function toggleCardMember(cardId: string, userId: string) {
+    const has = cardMembers.some((cm) => cm.card_id === cardId && cm.user_id === userId);
+    if (has) {
+      setCardMembers((cms) => cms.filter((cm) => !(cm.card_id === cardId && cm.user_id === userId)));
+      await persist(supabase.from("card_members").delete().eq("card_id", cardId).eq("user_id", userId));
+    } else {
+      setCardMembers((cms) => [...cms, { card_id: cardId, user_id: userId }]);
+      await persist(supabase.from("card_members").insert({ card_id: cardId, user_id: userId, board_id: boardId }));
+    }
+  }
+
+  // Returns an error message, or null when the person was added.
+  async function addBoardMember(email: string): Promise<string | null> {
+    const { data: userId, error } = await supabase.rpc("add_board_member", { p_board_id: boardId, p_email: email });
+    if (error) return error.message;
+    const { data: profile } = await supabase.from("profiles").select("id, email").eq("id", userId).maybeSingle<Profile>();
+    if (profile) setPeople((ps) => (ps.some((p) => p.id === profile.id) ? ps : [...ps, profile]));
+    return null;
+  }
+
+  async function removeBoardMember(userId: string) {
+    const { error } = await supabase.from("board_members").delete().eq("board_id", boardId).eq("user_id", userId);
+    if (error) return alert(error.message);
+    if (userId === currentUserId) {
+      router.push("/");
+      router.refresh();
+      return;
+    }
+    setPeople((ps) => ps.filter((p) => p.id !== userId));
+    setCardMembers((cms) => cms.filter((cm) => cm.user_id !== userId));
+    setFilter((f) => ({ ...f, memberIds: f.memberIds.filter((x) => x !== userId) }));
+  }
+
   function adjustCommentCount(cardId: string, delta: number) {
     setCommentCounts((m) => ({ ...m, [cardId]: Math.max(0, (m[cardId] ?? 0) + delta) }));
   }
@@ -364,14 +428,30 @@ function useBoardState(initial: BoardData) {
     updateItem,
     deleteItem,
     adjustCommentCount,
+    currentUserId,
+    isOwner,
+    people,
+    membersOf,
+    emailOf,
+    toggleCardMember,
+    addBoardMember,
+    removeBoardMember,
   };
 }
 
 type BoardCtx = ReturnType<typeof useBoardState>;
 const Ctx = createContext<BoardCtx | null>(null);
 
-export function BoardProvider({ initial, children }: { initial: BoardData; children: React.ReactNode }) {
-  const value = useBoardState(initial);
+export function BoardProvider({
+  initial,
+  currentUserId,
+  children,
+}: {
+  initial: BoardData;
+  currentUserId: string;
+  children: React.ReactNode;
+}) {
+  const value = useBoardState(initial, currentUserId);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

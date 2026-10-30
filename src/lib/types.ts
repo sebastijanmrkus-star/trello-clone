@@ -2,6 +2,7 @@ export type Workspace = { id: string; name: string; created_at: string };
 export type Board = {
   id: string;
   workspace_id: string;
+  owner_id: string;
   title: string;
   background: string;
   starred: boolean;
@@ -27,9 +28,11 @@ export type Label = { id: string; board_id: string; name: string; color: string 
 export type CardLabel = { card_id: string; label_id: string };
 export type Checklist = { id: string; card_id: string; title: string; position: number };
 export type ChecklistItem = { id: string; checklist_id: string; title: string; done: boolean; position: number };
+export type Profile = { id: string; email: string };
+export type CardMember = { card_id: string; user_id: string };
 export type Comment = { id: string; card_id: string; author_id: string; body: string; created_at: string };
 
-export const BOARD_COLUMNS = "id, workspace_id, title, background, starred, last_viewed_at, created_at";
+export const BOARD_COLUMNS = "id, workspace_id, owner_id, title, background, starred, last_viewed_at, created_at";
 export const LIST_COLUMNS = "id, board_id, title, position, archived";
 export const CARD_COLUMNS =
   "id, board_id, list_id, title, description, position, due_at, due_complete, cover, archived, completed, created_at";

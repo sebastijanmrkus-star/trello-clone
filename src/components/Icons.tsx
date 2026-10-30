@@ -55,3 +55,9 @@ export const CheckCircleIcon = ({ className, filled }: P & { filled?: boolean })
   filled
     ? svg(className, <><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none" /><path d="m7.5 12.5 3 3 6-6.5" stroke="white" /></>)
     : svg(className, <><circle cx="12" cy="12" r="9.5" /><path d="m7.5 12.5 3 3 6-6.5" /></>);
+export const UsersIcon = ({ className }: P) =>
+  svg(className, <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6" /></>);
+export const UserIcon = ({ className }: P) =>
+  svg(className, <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>);
+export const LogOutIcon = ({ className }: P) =>
+  svg(className, <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3" />);

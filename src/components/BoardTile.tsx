@@ -2,13 +2,14 @@ import Link from "next/link";
 import type { Board } from "@/lib/types";
 import { StarButton } from "./StarButton";
 
-export function BoardTile({ board }: { board: Board }) {
+export function BoardTile({ board, canStar = true }: { board: Board; canStar?: boolean }) {
   return (
     <Link
       href={`/b/${board.id}`}
       className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md"
     >
       <div className="relative h-20" style={{ background: board.background }}>
+        {canStar && (
         <StarButton
           boardId={board.id}
           starred={board.starred}
@@ -16,6 +17,7 @@ export function BoardTile({ board }: { board: Board }) {
             board.starred ? "" : "opacity-0 focus:opacity-100 group-hover:opacity-100"
           }`}
         />
+        )}
       </div>
       <p className="truncate px-3 py-2.5 text-sm font-medium text-gray-800">{board.title}</p>
     </Link>
