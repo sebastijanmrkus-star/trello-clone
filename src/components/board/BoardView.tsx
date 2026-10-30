@@ -8,6 +8,7 @@ import { BoardSwitcher } from "./BoardSwitcher";
 import { BoardSidebar } from "./BoardSidebar";
 import { BoardMenu } from "./BoardMenu";
 import { FilterButton } from "./FilterButton";
+import { ShareButton } from "./ShareButton";
 import { ListColumn } from "./ListColumn";
 import { CardModal } from "./CardModal";
 import { InlineEdit } from "../InlineEdit";
@@ -18,18 +19,18 @@ type Props = {
   initial: BoardData;
   allBoards: Board[];
   workspaces: Workspace[];
-  userEmail: string;
+  currentUserId: string;
 };
 
 export function BoardView(props: Props) {
   return (
-    <BoardProvider key={props.initial.board.id} initial={props.initial}>
+    <BoardProvider key={props.initial.board.id} initial={props.initial} currentUserId={props.currentUserId}>
       <BoardScreen {...props} />
     </BoardProvider>
   );
 }
 
-function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
+function BoardScreen({ allBoards, workspaces, currentUserId }: Props) {
   const b = useBoard();
   const { board, activeLists, cardsIn, matches, filterActive, clearFilter } = b;
   const [openCardId, setOpenCardId] = useState<string | null>(null);
@@ -64,29 +65,38 @@ function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
     <div className="flex min-h-0 flex-1">
       <BoardSidebar
         boards={boards}
-        workspace={workspaces.find((w) => w.id === board.workspace_id)}
+        workspace={workspaces.find((w) => w.id === board.workspace_id) ?? workspaces[0]}
         currentId={board.id}
+        currentUserId={currentUserId}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex flex-wrap items-center gap-2 bg-black/25 px-3 py-2 text-white backdrop-blur-sm">
-          <InlineEdit
-            value={board.title}
-            onSave={(t) => b.updateBoard({ title: t })}
-            className="max-w-[60vw] truncate rounded px-2 py-1 text-lg font-bold hover:bg-white/20"
-            inputClassName="rounded px-2 py-1 text-lg font-bold text-gray-900"
-          />
-          <button
-            onClick={() => b.updateBoard({ starred: !board.starred })}
-            className="rounded p-1.5 hover:bg-white/20"
-            aria-label={board.starred ? "Unstar board" : "Star board"}
-            aria-pressed={board.starred}
-          >
-            <StarIcon filled={board.starred} className={`h-4 w-4 ${board.starred ? "text-[#f5cd47]" : ""}`} />
-          </button>
-          <BoardSwitcher boards={boards} workspaces={workspaces} currentId={board.id} />
+          {/* Board settings (title, star) belong to the owner; members just see them. */}
+          {b.isOwner ? (
+            <>
+              <InlineEdit
+                value={board.title}
+                onSave={(t) => b.updateBoard({ title: t })}
+                className="max-w-[60vw] truncate rounded px-2 py-1 text-lg font-bold hover:bg-white/20"
+                inputClassName="rounded px-2 py-1 text-lg font-bold text-gray-900"
+              />
+              <button
+                onClick={() => b.updateBoard({ starred: !board.starred })}
+                className="rounded p-1.5 hover:bg-white/20"
+                aria-label={board.starred ? "Unstar board" : "Star board"}
+                aria-pressed={board.starred}
+              >
+                <StarIcon filled={board.starred} className={`h-4 w-4 ${board.starred ? "text-[#f5cd47]" : ""}`} />
+              </button>
+            </>
+          ) : (
+            <h1 className="max-w-[60vw] truncate px-2 py-1 text-lg font-bold">{board.title}</h1>
+          )}
+          <BoardSwitcher boards={boards} workspaces={workspaces} currentId={board.id} currentUserId={currentUserId} />
 
           <div className="ml-auto flex items-center gap-2">
+            <ShareButton />
             <FilterButton />
             <button
               onClick={() => setMenuOpen((o) => !o)}
@@ -139,7 +149,7 @@ function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
       </div>
 
       {menuOpen && <BoardMenu onClose={() => setMenuOpen(false)} onOpenCard={setOpenCardId} />}
-      {openCard && <CardModal card={openCard} userEmail={userEmail} onClose={() => setOpenCardId(null)} />}
+      {openCard && <CardModal card={openCard} onClose={() => setOpenCardId(null)} />}
     </div>
   );
 }

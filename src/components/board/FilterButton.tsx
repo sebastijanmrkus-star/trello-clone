@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LABEL_COLORS } from "@/lib/types";
 import { useBoard, type DueFilter, type StatusFilter } from "./BoardProvider";
 import { Popover } from "./Popover";
+import { Avatar } from "../Avatar";
 import { FilterIcon } from "../Icons";
 
 const DUE_OPTIONS: [DueFilter, string][] = [
@@ -19,7 +20,7 @@ const STATUS_OPTIONS: [StatusFilter, string][] = [
 ];
 
 export function FilterButton() {
-  const { filter, setFilter, filterActive, clearFilter, labels, activeLists, cardsIn, matches } = useBoard();
+  const { filter, setFilter, filterActive, clearFilter, labels, people, currentUserId, activeLists, cardsIn, matches } = useBoard();
   const [open, setOpen] = useState(false);
   const shown = activeLists.reduce((n, l) => n + cardsIn(l.id).filter(matches).length, 0);
 
@@ -46,6 +47,23 @@ export function FilterButton() {
             placeholder="Search cards…"
             className="mb-3 w-full rounded border border-gray-300 px-2 py-1.5 outline-none focus:border-[#0c66e4]"
           />
+
+          <p className="mb-1 text-xs font-semibold text-gray-600">Members</p>
+          <div className="mb-3 max-h-40 overflow-y-auto">
+            {people.map((p) => (
+              <label key={p.id} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-gray-50">
+                <input
+                  type="checkbox"
+                  checked={filter.memberIds.includes(p.id)}
+                  onChange={() => setFilter({ ...filter, memberIds: toggle(filter.memberIds, p.id) })}
+                />
+                <Avatar email={p.email} size="sm" />
+                <span className="min-w-0 flex-1 truncate">
+                  {p.id === currentUserId ? "Cards assigned to me" : p.email}
+                </span>
+              </label>
+            ))}
+          </div>
 
           <p className="mb-1 text-xs font-semibold text-gray-600">Card status</p>
           {STATUS_OPTIONS.map(([v, label]) => (

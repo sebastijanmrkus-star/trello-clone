@@ -1,14 +1,17 @@
-import { getBoards, getWorkspaces } from "@/lib/data";
+import { getBoards, getUser, getWorkspaces } from "@/lib/data";
 import { AppShell } from "@/components/AppShell";
 import { BoardGrid, BoardTile } from "@/components/BoardTile";
 import { CreateBoardTile } from "@/components/CreateBoardDialog";
 import { TemplatesShowcase } from "@/components/TemplatesShowcase";
 import { WorkspaceAvatar } from "@/components/Sidebar";
-import { ClockIcon, StarIcon } from "@/components/Icons";
+import { ClockIcon, StarIcon, UsersIcon } from "@/components/Icons";
 
 export default async function BoardsPage() {
-  const [workspaces, boards] = await Promise.all([getWorkspaces(), getBoards()]);
+  const [workspaces, allBoards, user] = await Promise.all([getWorkspaces(), getBoards(), getUser()]);
 
+  // Stars and "recently viewed" are the owner's own settings, so they only cover your boards.
+  const boards = allBoards.filter((b) => b.owner_id === user?.id);
+  const shared = allBoards.filter((b) => b.owner_id !== user?.id);
   const starred = boards.filter((b) => b.starred);
   const recent = boards
     .filter((b) => b.last_viewed_at)
@@ -40,6 +43,19 @@ export default async function BoardsPage() {
           <BoardGrid>
             {recent.map((b) => (
               <BoardTile key={b.id} board={b} />
+            ))}
+          </BoardGrid>
+        </section>
+      )}
+
+      {shared.length > 0 && (
+        <section className="mb-10">
+          <h2 className="mb-4 flex items-center gap-2 font-bold">
+            <UsersIcon className="h-5 w-5" /> Shared with you
+          </h2>
+          <BoardGrid>
+            {shared.map((b) => (
+              <BoardTile key={b.id} board={b} canStar={false} />
             ))}
           </BoardGrid>
         </section>

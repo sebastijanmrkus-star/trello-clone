@@ -10,15 +10,19 @@ export function BoardSwitcher({
   boards,
   workspaces,
   currentId,
+  currentUserId,
 }: {
   boards: Board[];
   workspaces: Workspace[];
   currentId: string;
+  currentUserId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const match = (b: Board) => b.title.toLowerCase().includes(q.trim().toLowerCase());
-  const starred = boards.filter((b) => b.starred && match(b));
+  const own = (b: Board) => b.owner_id === currentUserId;
+  const starred = boards.filter((b) => own(b) && b.starred && match(b));
+  const shared = boards.filter((b) => !own(b) && match(b));
 
   const row = (b: Board) => (
     <Link
@@ -29,7 +33,7 @@ export function BoardSwitcher({
     >
       <span className="h-6 w-8 shrink-0 rounded" style={{ background: b.background }} />
       <span className="flex-1 truncate">{b.title}</span>
-      {b.starred && <StarIcon filled className="h-3.5 w-3.5 text-[#f5cd47]" />}
+      {own(b) && b.starred && <StarIcon filled className="h-3.5 w-3.5 text-[#f5cd47]" />}
     </Link>
   );
 
@@ -69,6 +73,12 @@ export function BoardSwitcher({
                 </div>
               );
             })}
+            {shared.length > 0 && (
+              <>
+                <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase text-gray-500">Shared with you</p>
+                {shared.map(row)}
+              </>
+            )}
             {!boards.some(match) && <p className="px-2 py-2 text-gray-500">No boards found.</p>}
           </div>
         </Popover>
