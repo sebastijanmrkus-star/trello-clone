@@ -5,12 +5,12 @@ import { LABEL_COLORS, type Label } from "@/lib/types";
 import { useBoard } from "./BoardProvider";
 import { LabelEditor } from "./LabelEditor";
 import { BackgroundPicker } from "../BackgroundPicker";
-import { ArchiveIcon, ChevronLeftIcon, CloseIcon, PencilIcon, TagIcon, TrashIcon } from "../Icons";
+import { ArchiveIcon, ChevronLeftIcon, CloseIcon, LogOutIcon, PencilIcon, TagIcon, TrashIcon } from "../Icons";
 
 type View = "main" | "background" | "labels" | "archived";
 
 export function BoardMenu({ onClose, onOpenCard }: { onClose: () => void; onOpenCard: (id: string) => void }) {
-  const { board, updateBoard, deleteBoard, labels, createLabel, updateLabel, deleteLabel, lists, cards, updateCard, deleteCard, updateList, deleteList } =
+  const { board, isOwner, currentUserId, removeBoardMember, updateBoard, deleteBoard, labels, createLabel, updateLabel, deleteLabel, lists, cards, updateCard, deleteCard, updateList, deleteList } =
     useBoard();
   const [view, setView] = useState<View>("main");
   const [editing, setEditing] = useState<Label | "new" | null>(null);
@@ -56,16 +56,25 @@ export function BoardMenu({ onClose, onOpenCard }: { onClose: () => void; onOpen
       <div className="flex-1 overflow-y-auto p-3">
         {view === "main" && (
           <>
-            {item(<span className="h-4 w-4 rounded-sm" style={{ background: board.background }} />, "Change background", () => setView("background"))}
+            {/* Background and deleting are board settings, so only the owner gets them. */}
+            {isOwner &&
+              item(<span className="h-4 w-4 rounded-sm" style={{ background: board.background }} />, "Change background", () => setView("background"))}
             {item(<TagIcon />, "Labels", () => setView("labels"))}
             {item(<ArchiveIcon />, `Archived items (${archivedCards.length + archivedLists.length})`, () => setView("archived"))}
             <hr className="my-2" />
-            {item(
-              <TrashIcon />,
-              "Delete board",
-              () => confirm(`Permanently delete "${board.title}" and everything in it?`) && deleteBoard(),
-              true,
-            )}
+            {isOwner
+              ? item(
+                  <TrashIcon />,
+                  "Delete board",
+                  () => confirm(`Permanently delete "${board.title}" and everything in it?`) && deleteBoard(),
+                  true,
+                )
+              : item(
+                  <LogOutIcon />,
+                  "Leave board",
+                  () => confirm("Leave this board? You'll lose access to it.") && removeBoardMember(currentUserId),
+                  true,
+                )}
           </>
         )}
 

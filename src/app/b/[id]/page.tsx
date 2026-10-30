@@ -10,6 +10,8 @@ import {
   LIST_COLUMNS,
   type Board,
   type Card,
+  type CardMember,
+  type Profile,
   type CardLabel,
   type Checklist,
   type ChecklistItem,
@@ -30,6 +32,8 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
     { data: checklists },
     { data: items },
     { data: commentRows },
+    { data: memberRows },
+    { data: cardMembers },
     allBoards,
     workspaces,
     user,
@@ -46,15 +50,29 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
       .eq("board_id", id)
       .returns<ChecklistItem[]>(),
     supabase.from("comments").select("card_id").eq("board_id", id).returns<{ card_id: string }[]>(),
+    supabase
+      .from("board_members")
+      .select("profiles(id, email)")
+      .eq("board_id", id)
+      .order("added_at")
+      .returns<{ profiles: Profile | null }[]>(),
+    supabase.from("card_members").select("card_id, user_id").eq("board_id", id).returns<CardMember[]>(),
     getBoards(),
     getWorkspaces(),
     getUser(),
   ]);
 
   if (!board) notFound();
+  const isOwner = board.owner_id === user?.id;
 
-  // Feeds the "Recently viewed" section on the boards page.
-  await supabase.from("boards").update({ last_viewed_at: new Date().toISOString() }).eq("id", id);
+  // Feeds the "Recently viewed" section on the boards page (a board setting, so owner only).
+  if (isOwner) await supabase.from("boards").update({ last_viewed_at: new Date().toISOString() }).eq("id", id);
+
+  const { data: owner } = await supabase.from("profiles").select("id, email").eq("id", board.owner_id).maybeSingle<Profile>();
+  const people: Profile[] = [
+    owner ?? { id: board.owner_id, email: "Board owner" },
+    ...(memberRows ?? []).flatMap((m) => (m.profiles ? [m.profiles] : [])),
+  ];
 
   const commentCounts: Record<string, number> = {};
   for (const r of commentRows ?? []) commentCounts[r.card_id] = (commentCounts[r.card_id] ?? 0) + 1;
@@ -73,10 +91,12 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
           checklists: checklists ?? [],
           items: items ?? [],
           commentCounts,
+          people,
+          cardMembers: cardMembers ?? [],
         }}
+        currentUserId={user?.id ?? ""}
         allBoards={allBoards}
         workspaces={workspaces}
-        userEmail={user?.email ?? ""}
       />
     </div>
   );

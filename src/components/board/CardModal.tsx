@@ -6,6 +6,7 @@ import { useBoard } from "./BoardProvider";
 import { Popover } from "./Popover";
 import { LabelEditor } from "./LabelEditor";
 import { InlineEdit } from "../InlineEdit";
+import { Avatar } from "../Avatar";
 import {
   ArchiveIcon,
   ArrowRightIcon,
@@ -21,20 +22,22 @@ import {
   TagIcon,
   TextIcon,
   TrashIcon,
+  UserIcon,
 } from "../Icons";
 
-type Pop = null | "labels" | "checklist" | "dates" | "cover" | "move" | "copy";
+type Pop = null | "members" | "labels" | "checklist" | "dates" | "cover" | "move" | "copy";
 
 const toLocalInput = (iso: string) => {
   const d = new Date(iso);
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 };
 
-export function CardModal({ card, userEmail, onClose }: { card: Card; userEmail: string; onClose: () => void }) {
-  const { lists, labelsOf, updateCard, deleteCard } = useBoard();
+export function CardModal({ card, onClose }: { card: Card; onClose: () => void }) {
+  const { lists, labelsOf, membersOf, updateCard, deleteCard } = useBoard();
   const [pop, setPop] = useState<Pop>(null);
   const list = lists.find((l) => l.id === card.list_id);
   const labels = labelsOf(card.id);
+  const members = membersOf(card.id);
   const status = dueStatus(card);
 
   useEffect(() => {
@@ -108,8 +111,25 @@ export function CardModal({ card, userEmail, onClose }: { card: Card; userEmail:
 
         <div className="grid gap-6 px-5 pb-6 md:grid-cols-[1fr_180px]">
           <div className="min-w-0 space-y-6">
-            {(labels.length > 0 || card.due_at) && (
+            {(members.length > 0 || labels.length > 0 || card.due_at) && (
               <div className="flex flex-wrap gap-6">
+                {members.length > 0 && (
+                  <div>
+                    <p className="mb-1 text-xs font-semibold text-gray-600">Members</p>
+                    <div className="flex flex-wrap gap-1">
+                      {members.map((m) => (
+                        <Avatar key={m.id} email={m.email} />
+                      ))}
+                      <button
+                        onClick={() => setPop("members")}
+                        className="grid h-8 w-8 place-items-center rounded-full bg-gray-200 hover:bg-gray-300"
+                        aria-label="Add member"
+                      >
+                        <PlusIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {labels.length > 0 && (
                   <div>
                     <p className="mb-1 text-xs font-semibold text-gray-600">Labels</p>
@@ -163,17 +183,19 @@ export function CardModal({ card, userEmail, onClose }: { card: Card; userEmail:
 
             <Description card={card} />
             <Checklists cardId={card.id} />
-            <Activity card={card} userEmail={userEmail} />
+            <Activity card={card} />
           </div>
 
           <div className="space-y-4">
             <div className="relative space-y-1.5">
               <p className="text-xs font-semibold text-gray-600">Add to card</p>
+              {sideButton("members", <UserIcon />, "Members")}
               {sideButton("labels", <TagIcon />, "Labels")}
               {sideButton("checklist", <CheckSquareIcon />, "Checklist")}
               {sideButton("dates", <CalendarIcon />, "Dates")}
               {sideButton("cover", <ImageIcon />, "Cover")}
 
+              {pop === "members" && <MembersPopover card={card} onClose={() => setPop(null)} />}
               {pop === "labels" && <LabelsPopover card={card} onClose={() => setPop(null)} />}
               {pop === "checklist" && <ChecklistPopover cardId={card.id} onClose={() => setPop(null)} />}
               {pop === "dates" && <DatesPopover card={card} onClose={() => setPop(null)} />}
@@ -410,13 +432,12 @@ function Checklists({ cardId }: { cardId: string }) {
   );
 }
 
-function Activity({ card, userEmail }: { card: Card; userEmail: string }) {
-  const { supabase, adjustCommentCount } = useBoard();
+function Activity({ card }: { card: Card }) {
+  const { supabase, adjustCommentCount, currentUserId, emailOf } = useBoard();
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
-  const initials = userEmail.slice(0, 2).toUpperCase();
 
   useEffect(() => {
     let live = true;
@@ -463,17 +484,11 @@ function Activity({ card, userEmail }: { card: Card; userEmail: string }) {
     if (error) alert(error.message);
   }
 
-  const avatar = (
-    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#1f845a] text-xs font-bold text-white">
-      {initials}
-    </span>
-  );
-
   return (
     <section>
       <SectionTitle icon={<CommentIcon />}>Activity</SectionTitle>
       <form onSubmit={add} className="mb-4 flex gap-2">
-        {avatar}
+        <Avatar email={emailOf(currentUserId)} />
         <div className="flex-1">
           <textarea
             value={draft}
@@ -492,10 +507,10 @@ function Activity({ card, userEmail }: { card: Card; userEmail: string }) {
       {comments === null && <p className="text-sm text-gray-500">Loading…</p>}
       {comments?.map((c) => (
         <div key={c.id} className="mb-3 flex gap-2">
-          {avatar}
+          <Avatar email={emailOf(c.author_id)} />
           <div className="min-w-0 flex-1">
             <p className="text-sm">
-              <span className="font-semibold">{userEmail}</span>{" "}
+              <span className="font-semibold">{emailOf(c.author_id)}</span>{" "}
               <span className="text-xs text-gray-500">{new Date(c.created_at).toLocaleString()}</span>
             </p>
             {editingId === c.id ? (
@@ -518,6 +533,8 @@ function Activity({ card, userEmail }: { card: Card; userEmail: string }) {
             ) : (
               <>
                 <p className="whitespace-pre-wrap break-words rounded-lg bg-white px-3 py-2 text-sm shadow-sm">{c.body}</p>
+                {/* Only the author can change their comment (enforced by RLS too). */}
+                {c.author_id === currentUserId && (
                 <div className="mt-0.5 flex gap-2 text-xs text-gray-600">
                   <button
                     onClick={() => {
@@ -532,12 +549,49 @@ function Activity({ card, userEmail }: { card: Card; userEmail: string }) {
                     Delete
                   </button>
                 </div>
+                )}
               </>
             )}
           </div>
         </div>
       ))}
     </section>
+  );
+}
+
+function MembersPopover({ card, onClose }: { card: Card; onClose: () => void }) {
+  const { people, membersOf, toggleCardMember, currentUserId } = useBoard();
+  const [q, setQ] = useState("");
+  const on = new Set(membersOf(card.id).map((m) => m.id));
+  const shown = people.filter((p) => p.email.toLowerCase().includes(q.trim().toLowerCase()));
+
+  return (
+    <Popover title="Members" onClose={onClose}>
+      <input
+        autoFocus
+        value={q}
+        onChange={(e) => setQ(e.target.value)}
+        placeholder="Search members"
+        className="mb-2 w-full rounded border border-gray-300 px-2 py-1.5 outline-none focus:border-[#0c66e4]"
+      />
+      <p className="mb-1 text-xs font-semibold text-gray-600">Board members</p>
+      <ul className="space-y-0.5">
+        {shown.map((p) => (
+          <li key={p.id}>
+            <label className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 hover:bg-gray-100">
+              <input type="checkbox" checked={on.has(p.id)} onChange={() => toggleCardMember(card.id, p.id)} />
+              <Avatar email={p.email} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-sm">
+                {p.email}
+                {p.id === currentUserId && <span className="text-gray-500"> (you)</span>}
+              </span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      {shown.length === 0 && <p className="px-1 py-1 text-sm text-gray-500">No matching members.</p>}
+      <p className="mt-2 text-xs text-gray-500">Use Share on the board header to invite more people.</p>
+    </Popover>
   );
 }
 

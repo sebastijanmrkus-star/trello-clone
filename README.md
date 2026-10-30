@@ -15,8 +15,10 @@ Next.js 15 (App Router) + Supabase (Postgres, Auth, Row Level Security).
 - Color-coded labels (default set per board, create / rename / recolor / delete), shown on cards
 - Due dates with complete / due soon / overdue states, checklists with progress, card covers
 - Comments on cards, description, badges for description / comments / checklist progress
-- Board filters by keyword, label, due date and finished status
-- Each user only sees their own boards (RLS)
+- Board sharing: the owner invites registered users by email from the Share button; members can work on lists, cards, labels, checklists and comments, while renaming, starring, background, deleting and sharing stay with the owner. Members can leave a board, and shared boards appear under "Shared with you"
+- Card members: assign board members to cards from the card window; avatars show on card tiles, comments show their author, and the filter can show cards assigned to anyone (including "assigned to me")
+- Board filters by keyword, member, label, due date and finished status
+- Each user only sees boards they own or that were shared with them (RLS)
 
 ## Setup
 ```bash
