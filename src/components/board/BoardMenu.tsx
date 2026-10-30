@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { BACKGROUNDS } from "@/lib/templates";
 import { LABEL_COLORS, type Label } from "@/lib/types";
 import { useBoard } from "./BoardProvider";
 import { LabelEditor } from "./LabelEditor";
+import { BackgroundPicker } from "../BackgroundPicker";
 import { ArchiveIcon, ChevronLeftIcon, CloseIcon, LogOutIcon, PencilIcon, TagIcon, TrashIcon } from "../Icons";
 
 type View = "main" | "background" | "labels" | "archived";
@@ -79,17 +79,7 @@ export function BoardMenu({ onClose, onOpenCard }: { onClose: () => void; onOpen
         )}
 
         {view === "background" && (
-          <div className="grid grid-cols-2 gap-2">
-            {BACKGROUNDS.map((bg) => (
-              <button
-                key={bg}
-                onClick={() => updateBoard({ background: bg })}
-                style={{ background: bg }}
-                aria-label="Use this background"
-                className={`h-20 rounded-lg ${bg === board.background ? "ring-2 ring-[#0c66e4] ring-offset-2" : ""}`}
-              />
-            ))}
-          </div>
+          <BackgroundPicker value={board.background} onChange={(background) => updateBoard({ background })} />
         )}
 
         {view === "labels" &&

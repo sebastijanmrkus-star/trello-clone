@@ -19,6 +19,7 @@ export function TemplateModal({
   const router = useRouter();
   const [title, setTitle] = useState(template.title);
   const [workspaceId, setWorkspaceId] = useState(workspaces[0]?.id ?? "");
+  const [withContent, setWithContent] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export function TemplateModal({
       p_title: title.trim(),
       p_background: template.background,
       p_workspace_id: workspaceId,
-      p_lists: template.lists,
+      p_lists: withContent ? template.lists : [],
     });
     if (error) {
       setBusy(false);
@@ -60,7 +61,12 @@ export function TemplateModal({
           >
             <CloseIcon />
           </button>
-          <div className="flex gap-2 overflow-x-auto pb-1 pt-6">
+          {!withContent && (
+            <p className="mt-6 inline-block rounded bg-black/40 px-3 py-2 text-sm font-medium text-white">
+              Empty board — only the background is used
+            </p>
+          )}
+          <div className={`flex gap-2 overflow-x-auto pb-1 pt-6 ${withContent ? "" : "hidden"}`}>
             {template.lists.map((l) => (
               <div key={l.title} className="w-40 shrink-0 rounded-lg bg-[#f1f2f4] p-2 text-xs">
                 <p className="mb-1.5 font-semibold">{l.title}</p>
@@ -80,7 +86,9 @@ export function TemplateModal({
             <h2 className="text-xl font-bold">{template.title}</h2>
             <p className="mt-1 text-sm text-gray-600">{template.description}</p>
             <p className="mt-2 text-xs text-gray-500">
-              {template.lists.length} lists · {template.lists.reduce((n, l) => n + l.cards.length, 0)} starter cards
+              {withContent
+                ? `${template.lists.length} lists · ${template.lists.reduce((n, l) => n + l.cards.length, 0)} starter cards`
+                : "Starts empty"}
             </p>
           </div>
           <div className="space-y-2">
@@ -103,6 +111,24 @@ export function TemplateModal({
                 </option>
               ))}
             </select>
+            <label className="flex cursor-pointer items-center justify-between gap-3 py-1 text-sm">
+              Use suggested lists and cards
+              <button
+                type="button"
+                role="switch"
+                aria-checked={withContent}
+                onClick={() => setWithContent((v) => !v)}
+                className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+                  withContent ? "bg-[#0c66e4]" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${
+                    withContent ? "left-[18px]" : "left-0.5"
+                  }`}
+                />
+              </button>
+            </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               disabled={!title.trim() || busy}
