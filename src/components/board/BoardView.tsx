@@ -34,6 +34,7 @@ function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
   const { board, activeLists, cardsIn, matches, filterActive, clearFilter } = b;
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const openCard = b.cards.find((c) => c.id === openCardId) ?? null;
 
   // Keep the switcher/sidebar in sync with this board's live title/star/background.
@@ -41,6 +42,7 @@ function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
   const visibleIn = (listId: string) => cardsIn(listId).filter(matches);
 
   async function onDragEnd({ source, destination, draggableId, type }: DropResult) {
+    setDragging(false);
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
@@ -106,13 +108,18 @@ function BoardScreen({ allBoards, workspaces, userEmail }: Props) {
           </div>
         )}
 
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragStart={() => setDragging(true)} onDragEnd={onDragEnd}>
           <Droppable droppableId="board" direction="horizontal" type="list">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="flex flex-1 snap-x snap-mandatory items-start gap-3 overflow-x-auto p-3 sm:snap-none sm:p-4"
+                // The board is the only scroll container, so the drag library auto-scrolls it
+                // (sideways too) when a card is dragged near an edge. Lists grow with their cards.
+                // Phone snapping is paused mid-drag because it would undo each auto-scroll step.
+                className={`flex flex-1 items-start gap-3 overflow-auto p-3 sm:p-4 ${
+                  dragging ? "snap-none" : "snap-x snap-mandatory sm:snap-none"
+                }`}
               >
                 {activeLists.map((list, index) => (
                   <Draggable draggableId={list.id} index={index} key={list.id}>
