@@ -5,8 +5,8 @@ Next.js 15 (App Router) + Supabase (Postgres, Auth, Row Level Security).
 ## Features
 - Email/password sign-up and login (Supabase Auth)
 - Boards landing page: board search, Create button, starred boards, recently viewed, and boards grouped by workspace
-- Template gallery with categories: Popular, Small business, Design, Education, Engineering-IT, Marketing, Human Resources, Operations, CRM
-- Boards with color or gradient backgrounds; create, rename, star, change background, delete
+- Template gallery (59 templates, each with its own photo) in Trello's categories: Popular, Business, Design, Education, Engineering, Marketing, HR & Operations, Personal, Productivity, Product management, Project management, Remote work, Sales, Support, Team management
+- Boards with photo, color or gradient backgrounds, or your own uploaded image (Supabase Storage); create, rename, star, change background, delete
 - Board switcher (header dropdown + collapsible sidebar on the board page)
 - Responsive Kanban board: lists snap one-per-screen on phones, drag and drop on desktop and touch
 - Lists: create, rename, reorder, copy, move all cards, sort, archive / restore

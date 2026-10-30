@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { TEMPLATE_CATEGORIES } from "@/lib/templates";
 import type { Board, Workspace } from "@/lib/types";
 import { BoardsIcon, ChevronDownIcon, TemplateIcon } from "./Icons";
 
@@ -28,6 +29,11 @@ export function Sidebar({ workspaces, boards }: { workspaces: Workspace[]; board
       <nav className="sticky top-16 space-y-1">
         {item("/", "Boards", <BoardsIcon />)}
         {item("/templates", "Templates", <TemplateIcon />)}
+        {pathname.startsWith("/templates") && (
+          <Suspense>
+            <TemplateCategoryLinks />
+          </Suspense>
+        )}
         <div className="!my-3 border-t border-gray-200" />
         <p className="px-3 pb-1 text-xs font-semibold text-gray-500">Workspaces</p>
         {workspaces.map((w) => (
@@ -35,6 +41,25 @@ export function Sidebar({ workspaces, boards }: { workspaces: Workspace[]; board
         ))}
       </nav>
     </aside>
+  );
+}
+
+function TemplateCategoryLinks() {
+  const current = useSearchParams().get("category") ?? "popular";
+  return (
+    <div className="space-y-0.5 pb-1 pl-9">
+      {TEMPLATE_CATEGORIES.map((c) => (
+        <Link
+          key={c.slug}
+          href={`/templates?category=${c.slug}`}
+          className={`block rounded px-3 py-1.5 text-sm ${
+            c.slug === current ? "bg-gray-100 font-semibold text-gray-900" : "text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          {c.name}
+        </Link>
+      ))}
+    </div>
   );
 }
 

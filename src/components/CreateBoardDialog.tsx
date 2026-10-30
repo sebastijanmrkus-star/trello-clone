@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BACKGROUNDS } from "@/lib/templates";
+import { BACKGROUND_PHOTOS } from "@/lib/templates";
+import { BackgroundPicker } from "./BackgroundPicker";
 import type { Workspace } from "@/lib/types";
 import { CloseIcon, PlusIcon } from "./Icons";
 
@@ -52,7 +53,7 @@ function CreateBoardDialog({
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [background, setBackground] = useState(BACKGROUNDS[8]);
+  const [background, setBackground] = useState(BACKGROUND_PHOTOS[0].background);
   const [workspaceId, setWorkspaceId] = useState(defaultWorkspaceId ?? workspaces[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,18 +95,8 @@ function CreateBoardDialog({
           </div>
         </div>
 
-        <p className="mb-1 text-xs font-semibold text-gray-600">Background</p>
-        <div className="mb-4 grid grid-cols-7 gap-1.5">
-          {BACKGROUNDS.map((bg) => (
-            <button
-              type="button"
-              key={bg}
-              onClick={() => setBackground(bg)}
-              style={{ background: bg }}
-              className={`h-8 rounded ${bg === background ? "ring-2 ring-[#0c66e4] ring-offset-1" : ""}`}
-              aria-label="Choose background"
-            />
-          ))}
+        <div className="mb-4">
+          <BackgroundPicker value={background} onChange={setBackground} compact />
         </div>
 
         <label className="mb-1 block text-xs font-semibold text-gray-600">
