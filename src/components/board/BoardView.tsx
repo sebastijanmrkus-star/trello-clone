@@ -68,12 +68,13 @@ function BoardScreen({ allBoards, workspaces, currentUserId }: Props) {
         workspace={workspaces.find((w) => w.id === board.workspace_id) ?? workspaces[0]}
         currentId={board.id}
         currentUserId={currentUserId}
+        teamIds={workspaces.map((w) => w.id)}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex flex-wrap items-center gap-2 bg-black/25 px-3 py-2 text-white backdrop-blur-sm">
           {/* Board settings (title, star) belong to the owner; members just see them. */}
-          {b.isOwner ? (
+          {b.canManage ? (
             <>
               <InlineEdit
                 value={board.title}

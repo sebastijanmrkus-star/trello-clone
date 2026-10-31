@@ -6,7 +6,7 @@ import { Popover } from "./Popover";
 import { Avatar } from "../Avatar";
 
 export function ShareButton() {
-  const { people, isOwner, currentUserId, board, addBoardMember, removeBoardMember } = useBoard();
+  const { people, canManage, teamMemberIds, currentUserId, board, addBoardMember, removeBoardMember } = useBoard();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,7 +42,7 @@ export function ShareButton() {
 
       {open && (
         <Popover title="Share board" onClose={() => setOpen(false)} align="right" className="w-80">
-          {isOwner && (
+          {canManage && (
             <form onSubmit={invite} className="mb-3">
               <label className="mb-1 block text-xs font-semibold text-gray-600">Invite by email</label>
               <div className="flex gap-2">
@@ -70,6 +70,7 @@ export function ShareButton() {
           <ul className="max-h-64 space-y-1 overflow-y-auto">
             {people.map((p) => {
               const owner = p.id === board.owner_id;
+              const viaTeam = teamMemberIds.includes(p.id);
               const me = p.id === currentUserId;
               return (
                 <li key={p.id} className="flex items-center gap-2 rounded px-1 py-1">
@@ -80,7 +81,12 @@ export function ShareButton() {
                   </span>
                   {owner ? (
                     <span className="text-xs text-gray-500">Owner</span>
-                  ) : isOwner ? (
+                  ) : viaTeam ? (
+                    // Team members come and go on the team page, not per board.
+                    <span className="text-xs text-gray-500" title="Has access through the team">
+                      Team
+                    </span>
+                  ) : canManage ? (
                     <button
                       onClick={() => confirm(`Remove ${p.email} from this board?`) && removeBoardMember(p.id)}
                       className="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50"

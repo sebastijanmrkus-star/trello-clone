@@ -22,7 +22,7 @@ export function BoardSwitcher({
   const match = (b: Board) => b.title.toLowerCase().includes(q.trim().toLowerCase());
   const own = (b: Board) => b.owner_id === currentUserId;
   const starred = boards.filter((b) => own(b) && b.starred && match(b));
-  const shared = boards.filter((b) => !own(b) && match(b));
+  const shared = boards.filter((b) => !workspaces.some((w) => w.id === b.workspace_id) && match(b));
 
   const row = (b: Board) => (
     <Link
