@@ -20,7 +20,7 @@ const STATUS_OPTIONS: [StatusFilter, string][] = [
 ];
 
 export function FilterButton() {
-  const { filter, setFilter, filterActive, clearFilter, labels, people, currentUserId, activeLists, cardsIn, matches } = useBoard();
+  const { filter, setFilter, filterActive, clearFilter, labels, people, teamMemberIds, currentUserId, activeLists, cardsIn, matches } = useBoard();
   const [open, setOpen] = useState(false);
   const shown = activeLists.reduce((n, l) => n + cardsIn(l.id).filter(matches).length, 0);
 
@@ -50,7 +50,7 @@ export function FilterButton() {
 
           <p className="mb-1 text-xs font-semibold text-gray-600">Members</p>
           <div className="mb-3 max-h-40 overflow-y-auto">
-            {people.map((p) => (
+            {people.filter((p) => teamMemberIds.includes(p.id)).map((p) => (
               <label key={p.id} className="flex items-center gap-2 rounded px-1 py-1 hover:bg-gray-50">
                 <input
                   type="checkbox"

@@ -33,7 +33,7 @@ function LoginForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
 
-  // Confirmation and invitation links bring people back to where they were going.
+  // Confirmation links bring people back to where they were going.
   const redirectTo = () => `${location.origin}/auth/confirm?next=${encodeURIComponent(next)}`;
 
   function done() {

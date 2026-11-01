@@ -91,17 +91,3 @@ export function formatDue(iso: string) {
 export type Role = "admin" | "member";
 export type Team = Workspace & { role: Role };
 export type TeamMember = { user_id: string; role: Role; joined_at: string; email: string };
-export type Invitation = {
-  id: string;
-  token: string;
-  role: Role;
-  created_at: string;
-  expires_at: string;
-  accepted_at: string | null;
-  revoked_at: string | null;
-  created_by: string;
-  accepted_by: string | null;
-};
-export type InvitationStatus = "pending" | "accepted" | "expired" | "revoked";
-export const invitationStatus = (i: Pick<Invitation, "accepted_at" | "revoked_at" | "expires_at">): InvitationStatus =>
-  i.revoked_at ? "revoked" : i.accepted_at ? "accepted" : new Date(i.expires_at) <= new Date() ? "expired" : "pending";

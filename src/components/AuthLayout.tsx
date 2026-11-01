@@ -1,7 +1,7 @@
 // Unsplash photo by Annie Spratt (free to use under the Unsplash License).
 const TEAM_PHOTO = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80";
 
-// Photo panel plus a card for the sign-in, password and invitation pages.
+// Photo panel plus a card for the sign-in and password pages.
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-screen bg-gradient-to-br from-[#0079bf] to-[#5067c5]">

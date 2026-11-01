@@ -560,10 +560,13 @@ function Activity({ card }: { card: Card }) {
 }
 
 function MembersPopover({ card, onClose }: { card: Card; onClose: () => void }) {
-  const { people, membersOf, toggleCardMember, currentUserId } = useBoard();
+  const { people, teamMemberIds, membersOf, toggleCardMember, currentUserId } = useBoard();
   const [q, setQ] = useState("");
   const on = new Set(membersOf(card.id).map((m) => m.id));
-  const shown = people.filter((p) => p.email.toLowerCase().includes(q.trim().toLowerCase()));
+  // Only members of the board's team can be assigned (enforced by RLS too).
+  const shown = people.filter(
+    (p) => teamMemberIds.includes(p.id) && p.email.toLowerCase().includes(q.trim().toLowerCase()),
+  );
 
   return (
     <Popover title="Members" onClose={onClose}>
@@ -574,7 +577,7 @@ function MembersPopover({ card, onClose }: { card: Card; onClose: () => void }) 
         placeholder="Search members"
         className="mb-2 w-full rounded border border-gray-300 px-2 py-1.5 outline-none focus:border-[#0c66e4]"
       />
-      <p className="mb-1 text-xs font-semibold text-gray-600">Board members</p>
+      <p className="mb-1 text-xs font-semibold text-gray-600">Team members</p>
       <ul className="space-y-0.5">
         {shown.map((p) => (
           <li key={p.id}>
@@ -590,7 +593,7 @@ function MembersPopover({ card, onClose }: { card: Card; onClose: () => void }) 
         ))}
       </ul>
       {shown.length === 0 && <p className="px-1 py-1 text-sm text-gray-500">No matching members.</p>}
-      <p className="mt-2 text-xs text-gray-500">Use Share on the board header to invite more people.</p>
+      <p className="mt-2 text-xs text-gray-500">Only members of this board&apos;s team can be assigned. Team Admins add people on the team page.</p>
     </Popover>
   );
 }
