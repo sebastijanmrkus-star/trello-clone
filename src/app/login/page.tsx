@@ -65,6 +65,13 @@ function LoginForm() {
     });
     setLoading(null);
     if (error) return setMessage(error.message);
+    // Supabase answers a sign-up for an already-registered email with a user that
+    // has no identities, and sends no email. Say so instead of "check your inbox".
+    if (data.user && data.user.identities?.length === 0) {
+      setMode("signin");
+      setPassword("");
+      return setMessage("An account with this email already exists. Log in, or use “Forgot password?” to reset it.");
+    }
     if (!data.session) return setSentTo(email.trim());
     done();
   }
