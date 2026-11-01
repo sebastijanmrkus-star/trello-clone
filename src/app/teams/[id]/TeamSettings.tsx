@@ -3,24 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { invitationStatus, type Invitation, type InvitationStatus, type Role, type TeamMember, type Workspace } from "@/lib/types";
+import type { Role, TeamMember, Workspace } from "@/lib/types";
 import { InlineEdit } from "@/components/InlineEdit";
 import { Avatar } from "@/components/Avatar";
 import { WorkspaceAvatar } from "@/components/Sidebar";
-import { CopyIcon, TrashIcon } from "@/components/Icons";
-
-const EXPIRY_OPTIONS: [string, number][] = [
-  ["1 day", 1],
-  ["7 days", 7],
-  ["30 days", 30],
-];
-
-const STATUS_STYLES: Record<InvitationStatus, string> = {
-  pending: "bg-[#e9f2ff] text-[#0055cc]",
-  accepted: "bg-[#dcfff1] text-[#164b35]",
-  expired: "bg-gray-100 text-gray-600",
-  revoked: "bg-[#ffeceb] text-[#ae2e24]",
-};
+import { TrashIcon } from "@/components/Icons";
 
 const fmt = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -28,15 +15,11 @@ const fmt = (iso: string) =>
 export function TeamSettings({
   team,
   members,
-  invitations,
-  emails,
   myRole,
   currentUserId,
 }: {
   team: Workspace;
   members: TeamMember[];
-  invitations: Invitation[];
-  emails: Record<string, string>;
   myRole: Role;
   currentUserId: string;
 }) {
@@ -45,10 +28,9 @@ export function TeamSettings({
   const admin = myRole === "admin";
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("member");
-  const [days, setDays] = useState(7);
-  const [newLink, setNewLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [added, setAdded] = useState<string | null>(null);
   const adminCount = members.filter((m) => m.role === "admin").length;
 
   // Runs a change, shows any error (like the last-Admin rule), then reloads the data.
@@ -65,29 +47,16 @@ export function TeamSettings({
     return true;
   }
 
-  const linkFor = (token: string) => `${location.origin}/invite/${token}`;
-
-  async function copy(token: string) {
-    await navigator.clipboard?.writeText(linkFor(token)).catch(() => {});
-    setCopied(token);
-    setTimeout(() => setCopied((c) => (c === token ? null : c)), 2000);
-  }
-
-  async function createInvite(e: React.FormEvent) {
+  async function addMember(e: React.FormEvent) {
     e.preventDefault();
-    setBusy("invite");
-    setError(null);
-    const expires_at = new Date(Date.now() + days * 86400000).toISOString();
-    const { data, error } = await supabase
-      .from("team_invitations")
-      .insert({ workspace_id: team.id, role, expires_at })
-      .select("token")
-      .single<{ token: string }>();
-    setBusy(null);
-    if (error) return setError(error.message);
-    setNewLink(data.token);
-    copy(data.token);
-    router.refresh();
+    const who = email.trim();
+    if (!who) return;
+    setAdded(null);
+    const ok = await run("add", () => supabase.rpc("add_team_member", { p_team_id: team.id, p_email: who, p_role: role }));
+    if (ok) {
+      setAdded(who);
+      setEmail("");
+    }
   }
 
   async function leave() {
@@ -132,7 +101,7 @@ export function TeamSettings({
       <section>
         <h2 className="mb-1 text-lg font-semibold">Members ({members.length})</h2>
         <p className="mb-3 text-sm text-gray-600">
-          Everyone in the team can open and edit its boards. Admins also manage members, roles, invitations and team
+          Everyone in the team can open and edit its boards. Admins also add and remove members, change roles and manage team
           settings. A team always keeps at least one Admin.
         </p>
         <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200">
@@ -206,14 +175,24 @@ export function TeamSettings({
 
       {admin && (
         <section>
-          <h2 className="mb-1 text-lg font-semibold">Invitation links</h2>
+          <h2 className="mb-1 text-lg font-semibold">Add a member</h2>
           <p className="mb-3 text-sm text-gray-600">
-            Each link lets one person join, then stops working. Links expire, and you can revoke one any time before
-            it&apos;s used.
+            Add someone who already has an account here, using the email they signed up with.
           </p>
-          <form onSubmit={createInvite} className="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-4">
+          <form onSubmit={addMember} className="flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-4">
+            <label className="min-w-[14rem] flex-1 text-sm">
+              <span className="mb-1 block text-xs font-semibold text-gray-600">Email</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full rounded border border-gray-300 bg-white px-2 py-1.5 outline-none focus:border-[#0c66e4]"
+              />
+            </label>
             <label className="text-sm">
-              <span className="mb-1 block text-xs font-semibold text-gray-600">Joins as</span>
+              <span className="mb-1 block text-xs font-semibold text-gray-600">Role</span>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as Role)}
@@ -223,105 +202,17 @@ export function TeamSettings({
                 <option value="admin">Admin</option>
               </select>
             </label>
-            <label className="text-sm">
-              <span className="mb-1 block text-xs font-semibold text-gray-600">Expires after</span>
-              <select
-                value={days}
-                onChange={(e) => setDays(Number(e.target.value))}
-                className="rounded border border-gray-300 bg-white px-2 py-1.5"
-              >
-                {EXPIRY_OPTIONS.map(([label, d]) => (
-                  <option key={d} value={d}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
             <button
-              disabled={busy !== null}
+              disabled={busy !== null || !email.trim()}
               className="rounded bg-[#0c66e4] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#0055cc] disabled:opacity-50"
             >
-              Create invitation link
+              {busy === "add" ? "Adding…" : "Add to team"}
             </button>
-            {newLink && (
-              <div className="w-full">
-                <p className="mb-1 text-xs font-semibold text-gray-600">
-                  New link {copied === newLink ? "(copied to clipboard)" : ""}
-                </p>
-                <div className="flex gap-2">
-                  <input
-                    readOnly
-                    aria-label="New invitation link"
-                    value={linkFor(newLink)}
-                    onFocus={(e) => e.target.select()}
-                    className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1.5 font-mono text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => copy(newLink)}
-                    className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-sm ring-1 ring-gray-300 hover:bg-gray-100"
-                  >
-                    <CopyIcon /> Copy
-                  </button>
-                </div>
-              </div>
-            )}
           </form>
-
-          {invitations.length === 0 ? (
-            <p className="text-sm text-gray-500">No invitations yet.</p>
-          ) : (
-            <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200">
-              {invitations.map((inv) => {
-                const status = invitationStatus(inv);
-                return (
-                  <li key={inv.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm" data-invite-status={status}>
-                    <span className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${STATUS_STYLES[status]}`}>
-                      {status}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p>
-                        Joins as <span className="font-medium">{inv.role === "admin" ? "Admin" : "Member"}</span>
-                        {status === "accepted" && (
-                          <>
-                            {" "}
-                            · used by {inv.accepted_by ? (emails[inv.accepted_by] ?? "a former member") : "a deleted account"}
-                          </>
-                        )}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Created {fmt(inv.created_at)} by {emails[inv.created_by] ?? "a former member"} ·{" "}
-                        {status === "accepted" && inv.accepted_at
-                          ? `used ${fmt(inv.accepted_at)}`
-                          : status === "revoked" && inv.revoked_at
-                            ? `revoked ${fmt(inv.revoked_at)}`
-                            : `${status === "expired" ? "expired" : "expires"} ${fmt(inv.expires_at)}`}
-                      </p>
-                    </div>
-                    {status === "pending" && (
-                      <>
-                        <button
-                          onClick={() => copy(inv.token)}
-                          className="flex items-center gap-1 rounded px-2 py-1 hover:bg-gray-100"
-                        >
-                          <CopyIcon /> {copied === inv.token ? "Copied" : "Copy link"}
-                        </button>
-                        <button
-                          onClick={() =>
-                            confirm("Revoke this invitation? The link will stop working.") &&
-                            run(`revoke-${inv.id}`, () => supabase.rpc("revoke_invitation", { p_id: inv.id }))
-                          }
-                          disabled={busy !== null}
-                          className="rounded px-2 py-1 text-red-600 hover:bg-red-50 disabled:opacity-50"
-                        >
-                          Revoke
-                        </button>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+          {added && (
+            <p role="status" className="mt-2 text-sm text-[#1f845a]">
+              {added} was added to {team.name}.
+            </p>
           )}
         </section>
       )}

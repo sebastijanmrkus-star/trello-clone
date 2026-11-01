@@ -13,8 +13,8 @@ The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server 
 - Password reset: "Forgot password?" emails a one-time link to choose a new password; signed-in users can change it from the account menu
 - Four one-click demo accounts (fictional people) with two sample teams; demo passwords can't be changed
 - Teams: create teams and switch between them from the top bar; everyone in a team can open its boards
-- Roles: Admins rename or delete the team, change roles, remove members and manage invitations; Members can leave. A team always keeps at least one Admin (enforced in the database)
-- Invitation links: single-use, expire after 1, 7 or 30 days, can be revoked, and show their status (pending, accepted by whom, expired, revoked)
+- Roles: Admins rename or delete the team, add members, change roles and remove members; Members can leave. A team always keeps at least one Admin (enforced in the database)
+- Adding members: Admins add people who already have an account, by the email they signed up with
 - Boards landing page: board search, Create button, starred boards, recently viewed, and boards grouped by workspace
 - Template gallery (59 templates, each with its own photo) in Trello's categories: Popular, Business, Design, Education, Engineering, Marketing, HR & Operations, Personal, Productivity, Product management, Project management, Remote work, Sales, Support, Team management
 - Boards with photo, color or gradient backgrounds, or your own uploaded image (Supabase Storage); create, rename, star, change background, delete
@@ -27,7 +27,7 @@ The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server 
 - Due dates with complete / due soon / overdue states, checklists with progress, card covers
 - Comments on cards, description, badges for description / comments / checklist progress
 - Board sharing: the owner invites registered users by email from the Share button; members can work on lists, cards, labels, checklists and comments, while renaming, starring, background, deleting and sharing stay with the owner. Members can leave a board, and shared boards appear under "Shared with you"
-- Card members: assign board members to cards from the card window; avatars show on card tiles, comments show their author, and the filter can show cards assigned to anyone (including "assigned to me")
+- Card members: from the card window, assign members of the board's team to cards (only team members, enforced in the database); avatars show on card tiles, comments show their author, and the filter can show cards assigned to anyone (including "assigned to me")
 - Board filters by keyword, member, label, due date and finished status
 - Each user only sees boards they own, boards of their teams, and boards shared with them (RLS)
 
@@ -41,4 +41,4 @@ Apply the SQL in `supabase/migrations/` to your Supabase project (in order).
 
 In Supabase → Authentication → URL Configuration, add `https://<your-site>/**` to Redirect URLs so confirmation and password-reset links can return to `/auth/confirm`.
 
-Demo accounts (password `Demo-Pass-2026!`, also one click on the login page): `ava.admin@demo.example.com` (Admin of Demo Studio, Member of Marketing Crew), `leo.member@demo.example.com`, `mia.member@demo.example.com`, `noah.newcomer@demo.example.com` (only a personal team; use him to try invitation links).
+Demo accounts (password `Demo-Pass-2026!`, also one click on the login page): `ava.admin@demo.example.com` (Admin of Demo Studio, Member of Marketing Crew), `leo.member@demo.example.com`, `mia.member@demo.example.com`, `noah.newcomer@demo.example.com` (only a personal team; add him to a team from the team page).

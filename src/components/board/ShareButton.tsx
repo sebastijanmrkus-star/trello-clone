@@ -62,7 +62,7 @@ export function ShareButton() {
                 </button>
               </div>
               {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-              <p className="mt-1 text-xs text-gray-500">They need an account here. Members can edit cards and lists.</p>
+              <p className="mt-1 text-xs text-gray-500">They need an account here. They can edit cards and lists, but only team members can be assigned to cards.</p>
             </form>
           )}
 
