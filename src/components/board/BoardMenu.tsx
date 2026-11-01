@@ -10,7 +10,7 @@ import { ArchiveIcon, ChevronLeftIcon, CloseIcon, LogOutIcon, PencilIcon, TagIco
 type View = "main" | "background" | "labels" | "archived";
 
 export function BoardMenu({ onClose, onOpenCard }: { onClose: () => void; onOpenCard: (id: string) => void }) {
-  const { board, isOwner, currentUserId, removeBoardMember, updateBoard, deleteBoard, labels, createLabel, updateLabel, deleteLabel, lists, cards, updateCard, deleteCard, updateList, deleteList } =
+  const { board, canManage, teamMemberIds, currentUserId, removeBoardMember, updateBoard, deleteBoard, labels, createLabel, updateLabel, deleteLabel, lists, cards, updateCard, deleteCard, updateList, deleteList } =
     useBoard();
   const [view, setView] = useState<View>("main");
   const [editing, setEditing] = useState<Label | "new" | null>(null);
@@ -56,20 +56,21 @@ export function BoardMenu({ onClose, onOpenCard }: { onClose: () => void; onOpen
       <div className="flex-1 overflow-y-auto p-3">
         {view === "main" && (
           <>
-            {/* Background and deleting are board settings, so only the owner gets them. */}
-            {isOwner &&
+            {/* Background and deleting are board settings: the owner or a team Admin. */}
+            {canManage &&
               item(<span className="h-4 w-4 rounded-sm" style={{ background: board.background }} />, "Change background", () => setView("background"))}
             {item(<TagIcon />, "Labels", () => setView("labels"))}
             {item(<ArchiveIcon />, `Archived items (${archivedCards.length + archivedLists.length})`, () => setView("archived"))}
             <hr className="my-2" />
-            {isOwner
+            {canManage
               ? item(
                   <TrashIcon />,
                   "Delete board",
                   () => confirm(`Permanently delete "${board.title}" and everything in it?`) && deleteBoard(),
                   true,
                 )
-              : item(
+              : !teamMemberIds.includes(currentUserId) &&
+                item(
                   <LogOutIcon />,
                   "Leave board",
                   () => confirm("Leave this board? You'll lose access to it.") && removeBoardMember(currentUserId),

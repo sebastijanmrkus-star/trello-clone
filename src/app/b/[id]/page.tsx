@@ -12,6 +12,7 @@ import {
   type Card,
   type CardMember,
   type Profile,
+  type Role,
   type CardLabel,
   type Checklist,
   type ChecklistItem,
@@ -68,11 +69,26 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
   // Feeds the "Recently viewed" section on the boards page (a board setting, so owner only).
   if (isOwner) await supabase.from("boards").update({ last_viewed_at: new Date().toISOString() }).eq("id", id);
 
-  const { data: owner } = await supabase.from("profiles").select("id, email").eq("id", board.owner_id).maybeSingle<Profile>();
+  const [{ data: owner }, { data: teamRows }] = await Promise.all([
+    supabase.from("profiles").select("id, email").eq("id", board.owner_id).maybeSingle<Profile>(),
+    // Visible only to people in the board's team (RLS); guests the board was shared with get none.
+    supabase
+      .from("workspace_members")
+      .select("role, profiles(id, email)")
+      .eq("workspace_id", board.workspace_id)
+      .order("joined_at")
+      .returns<{ role: Role; profiles: Profile | null }[]>(),
+  ]);
+  const team = (teamRows ?? []).flatMap((m) => (m.profiles ? [{ ...m.profiles, role: m.role }] : []));
+  const canManage = isOwner || team.some((m) => m.id === user?.id && m.role === "admin");
+
+  // Everyone who can work on the board, once each.
+  const seen = new Set<string>();
   const people: Profile[] = [
     owner ?? { id: board.owner_id, email: "Board owner" },
+    ...team.map(({ id, email }) => ({ id, email })),
     ...(memberRows ?? []).flatMap((m) => (m.profiles ? [m.profiles] : [])),
-  ];
+  ].filter((p) => !seen.has(p.id) && !!seen.add(p.id));
 
   const commentCounts: Record<string, number> = {};
   for (const r of commentRows ?? []) commentCounts[r.card_id] = (commentCounts[r.card_id] ?? 0) + 1;
@@ -93,6 +109,8 @@ export default async function BoardPage({ params }: { params: Promise<{ id: stri
           commentCounts,
           people,
           cardMembers: cardMembers ?? [],
+          canManage,
+          teamMemberIds: team.map((m) => m.id),
         }}
         currentUserId={user?.id ?? ""}
         allBoards={allBoards}

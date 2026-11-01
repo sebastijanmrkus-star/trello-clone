@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { getUser, getWorkspaces } from "@/lib/data";
+import { getCurrentTeam, getTeams, getUser, getWorkspaces } from "@/lib/data";
 import { SearchBox } from "./SearchBox";
 import { CreateBoardButton } from "./CreateBoardDialog";
 import { UserMenu } from "./UserMenu";
+import { TeamSwitcher } from "./TeamSwitcher";
 
 export async function TopNav({ dark }: { dark?: boolean }) {
-  const [user, workspaces] = await Promise.all([getUser(), getWorkspaces()]);
+  const [user, workspaces, teams, current] = await Promise.all([getUser(), getWorkspaces(), getTeams(), getCurrentTeam()]);
 
   return (
     <header
@@ -22,10 +23,11 @@ export async function TopNav({ dark }: { dark?: boolean }) {
         </span>
         <span className="hidden sm:inline">Trello Clone</span>
       </Link>
+      <TeamSwitcher teams={teams} currentId={current?.id} dark={dark} />
 
       <div className="flex flex-1 items-center justify-center gap-2">
         <SearchBox dark={dark} />
-        <CreateBoardButton workspaces={workspaces} />
+        <CreateBoardButton workspaces={workspaces} defaultWorkspaceId={current?.id} />
       </div>
 
       <UserMenu email={user?.email ?? ""} />

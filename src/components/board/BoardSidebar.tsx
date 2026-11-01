@@ -14,11 +14,13 @@ export function BoardSidebar({
   workspace,
   currentId,
   currentUserId,
+  teamIds,
 }: {
   boards: Board[];
   workspace?: Workspace;
   currentId: string;
   currentUserId: string;
+  teamIds: string[];
 }) {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -51,7 +53,7 @@ export function BoardSidebar({
   }
 
   const mine = boards.filter((b) => b.workspace_id === workspace?.id);
-  const shared = boards.filter((b) => b.owner_id !== currentUserId);
+  const shared = boards.filter((b) => !teamIds.includes(b.workspace_id));
   const row = (b: Board) => (
     <Link
       key={b.id}
@@ -78,7 +80,7 @@ export function BoardSidebar({
         <BoardsIcon /> All boards
       </Link>
       <nav className="flex-1 overflow-y-auto px-2 pb-3">
-        <p className="px-2 pb-1 pt-4 text-xs font-semibold text-white/80">Your boards</p>
+        <p className="px-2 pb-1 pt-4 text-xs font-semibold text-white/80">Team boards</p>
         {mine.map(row)}
         {shared.length > 0 && (
           <>

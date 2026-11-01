@@ -23,9 +23,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAuthPage = request.nextUrl.pathname.startsWith("/login");
+  const path = request.nextUrl.pathname;
+  // Pages for signed-out people; signed-in people are sent on to the app.
+  const isAuthPage = path.startsWith("/login") || path.startsWith("/forgot-password");
   if (!user && !isAuthPage) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    // Remember where they were going so sign-in can bring them back.
+    const login = new URL("/login", request.url);
+    const next = path + request.nextUrl.search;
+    if (next !== "/") login.searchParams.set("next", next);
+    return NextResponse.redirect(login);
   }
   if (user && isAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));

@@ -8,7 +8,13 @@ Live: https://trello-clone-smd.netlify.app
 The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server components load each board's data, and client components handle the interactive board, including drag-and-drop with `@hello-pangea/dnd` and instant on-screen updates as each change is written to the database. Supabase provides Postgres storage and email/password sign-in, with Row Level Security so each user can only reach their own workspaces, boards, lists, cards, labels, checklists and comments, plus SQL functions for creating boards from templates and copying cards and lists.
 
 ## Features
-- Email/password sign-up and login (Supabase Auth)
+- Accounts (Supabase Auth): email/password sign-up with email confirmation (check-your-inbox screen and resend), sign-in, sign-out, and sessions that persist across visits; signed-out visitors are sent back to the page they wanted after signing in
+- Password safety: a live checklist (length, upper/lowercase, number, symbol, no surrounding spaces) on sign-up and password changes, and Show/Hide on every password field
+- Password reset: "Forgot password?" emails a one-time link to choose a new password; signed-in users can change it from the account menu
+- Four one-click demo accounts (fictional people) with two sample teams; demo passwords can't be changed
+- Teams: create teams and switch between them from the top bar; everyone in a team can open its boards
+- Roles: Admins rename or delete the team, change roles, remove members and manage invitations; Members can leave. A team always keeps at least one Admin (enforced in the database)
+- Invitation links: single-use, expire after 1, 7 or 30 days, can be revoked, and show their status (pending, accepted by whom, expired, revoked)
 - Boards landing page: board search, Create button, starred boards, recently viewed, and boards grouped by workspace
 - Template gallery (59 templates, each with its own photo) in Trello's categories: Popular, Business, Design, Education, Engineering, Marketing, HR & Operations, Personal, Productivity, Product management, Project management, Remote work, Sales, Support, Team management
 - Boards with photo, color or gradient backgrounds, or your own uploaded image (Supabase Storage); create, rename, star, change background, delete
@@ -23,7 +29,7 @@ The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server 
 - Board sharing: the owner invites registered users by email from the Share button; members can work on lists, cards, labels, checklists and comments, while renaming, starring, background, deleting and sharing stay with the owner. Members can leave a board, and shared boards appear under "Shared with you"
 - Card members: assign board members to cards from the card window; avatars show on card tiles, comments show their author, and the filter can show cards assigned to anyone (including "assigned to me")
 - Board filters by keyword, member, label, due date and finished status
-- Each user only sees boards they own or that were shared with them (RLS)
+- Each user only sees boards they own, boards of their teams, and boards shared with them (RLS)
 
 ## Setup
 ```bash
@@ -32,3 +38,7 @@ npm install
 npm run dev
 ```
 Apply the SQL in `supabase/migrations/` to your Supabase project (in order).
+
+In Supabase → Authentication → URL Configuration, add `https://<your-site>/**` to Redirect URLs so confirmation and password-reset links can return to `/auth/confirm`.
+
+Demo accounts (password `Demo-Pass-2026!`, also one click on the login page): `ava.admin@demo.example.com` (Admin of Demo Studio, Member of Marketing Crew), `leo.member@demo.example.com`, `mia.member@demo.example.com`, `noah.newcomer@demo.example.com` (only a personal team; use him to try invitation links).

@@ -35,7 +35,7 @@ export function Sidebar({ workspaces, boards }: { workspaces: Workspace[]; board
           </Suspense>
         )}
         <div className="!my-3 border-t border-gray-200" />
-        <p className="px-3 pb-1 text-xs font-semibold text-gray-500">Workspaces</p>
+        <p className="px-3 pb-1 text-xs font-semibold text-gray-500">Your teams</p>
         {workspaces.map((w) => (
           <WorkspaceItem key={w.id} workspace={w} boards={boards.filter((b) => b.workspace_id === w.id)} />
         ))}

@@ -9,7 +9,13 @@ import { BackgroundPicker } from "./BackgroundPicker";
 import type { Workspace } from "@/lib/types";
 import { CloseIcon, PlusIcon } from "./Icons";
 
-export function CreateBoardButton({ workspaces }: { workspaces: Workspace[] }) {
+export function CreateBoardButton({
+  workspaces,
+  defaultWorkspaceId,
+}: {
+  workspaces: Workspace[];
+  defaultWorkspaceId?: string;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -20,7 +26,9 @@ export function CreateBoardButton({ workspaces }: { workspaces: Workspace[] }) {
         <PlusIcon className="h-4 w-4 sm:hidden" />
         <span className="hidden sm:inline">Create</span>
       </button>
-      {open && <CreateBoardDialog workspaces={workspaces} onClose={() => setOpen(false)} />}
+      {open && (
+        <CreateBoardDialog workspaces={workspaces} defaultWorkspaceId={defaultWorkspaceId} onClose={() => setOpen(false)} />
+      )}
     </>
   );
 }
@@ -110,7 +118,7 @@ function CreateBoardDialog({
           className="mb-3 w-full rounded border border-gray-300 px-2 py-1.5 text-sm outline-none focus:border-[#0c66e4]"
         />
 
-        <label className="mb-1 block text-xs font-semibold text-gray-600">Workspace</label>
+        <label className="mb-1 block text-xs font-semibold text-gray-600">Team</label>
         <select
           value={workspaceId}
           onChange={(e) => setWorkspaceId(e.target.value)}

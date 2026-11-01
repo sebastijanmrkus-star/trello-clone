@@ -26,9 +26,13 @@ export type BoardData = {
   checklists: Checklist[];
   items: ChecklistItem[];
   commentCounts: Record<string, number>;
-  /** Board owner first, then members. */
+  /** Board owner first, then the board's team, then people it was shared with. */
   people: Profile[];
   cardMembers: CardMember[];
+  /** Board owner or an Admin of the board's team: may change board settings and sharing. */
+  canManage: boolean;
+  /** People who reach the board through its team (managed on the team page). */
+  teamMemberIds: string[];
 };
 
 export type DueFilter = "overdue" | "soon" | "none" | "complete";
@@ -341,7 +345,7 @@ function useBoardState(initial: BoardData, currentUserId: string) {
   }
 
   // ---- people ----
-  const isOwner = board.owner_id === currentUserId;
+  const { canManage, teamMemberIds } = initial;
   const membersOf = (cardId: string) => {
     const ids = new Set(cardMembers.filter((cm) => cm.card_id === cardId).map((cm) => cm.user_id));
     return people.filter((p) => ids.has(p.id));
@@ -429,7 +433,8 @@ function useBoardState(initial: BoardData, currentUserId: string) {
     deleteItem,
     adjustCommentCount,
     currentUserId,
-    isOwner,
+    canManage,
+    teamMemberIds,
     people,
     membersOf,
     emailOf,
