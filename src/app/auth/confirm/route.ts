@@ -3,7 +3,8 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safe-next";
 
-// Landing point for links in emails (sign-up confirmation, password reset).
+// Landing point for links in emails (sign-up confirmation, password reset)
+// and for Google sign-in.
 // Supabase sends either a one-time `code` (PKCE) or a `token_hash`; both are
 // exchanged here for a session, then the person continues to `next`.
 export async function GET(request: NextRequest) {
@@ -20,7 +21,11 @@ export async function GET(request: NextRequest) {
   else error = { message: url.searchParams.get("error_description") ?? "This link is missing its code." };
 
   if (error) {
-    const msg = /code verifier|both auth code/i.test(error.message)
+    // Google (or another provider) sent the person back with an error, e.g. they cancelled.
+    const oauthError = url.searchParams.get("error");
+    const msg = oauthError
+      ? `Google sign-in didn't finish: ${url.searchParams.get("error_description") ?? oauthError}. Please try again.`
+      : /code verifier|both auth code/i.test(error.message)
       ? "Open the link on the same device and browser you used to request it, or request a new one."
       : `That link didn't work: ${error.message}. Links work once and expire; request a new one.`;
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(msg)}`, url.origin));
