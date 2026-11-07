@@ -9,6 +9,7 @@ The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server 
 
 ## Features
 - Accounts (Supabase Auth): email/password sign-up with email confirmation (check-your-inbox screen and resend), sign-in, sign-out, and sessions that persist across visits; signed-out visitors are sent back to the page they wanted after signing in
+- Google sign-in: "Continue with Google" / "Sign up with Google" signs in or creates an account (with its own team) in one step; the button appears once the Google provider is enabled in Supabase
 - Password safety: a live checklist (length, upper/lowercase, number, symbol, no surrounding spaces) on sign-up and password changes, and Show/Hide on every password field
 - Password reset: "Forgot password?" emails a one-time link to choose a new password; signed-in users can change it from the account menu
 - Four one-click demo accounts (fictional people) with two sample teams; demo passwords can't be changed
@@ -38,6 +39,8 @@ npm install
 npm run dev
 ```
 Apply the SQL in `supabase/migrations/` to your Supabase project (in order).
+
+To enable Google sign-in: create an OAuth client (type "Web application") in Google Cloud Console with the authorized redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID and secret in Supabase → Authentication → Sign In / Providers → Google and enable it.
 
 In Supabase → Authentication → URL Configuration, add `https://<your-site>/**` to Redirect URLs so confirmation and password-reset links can return to `/auth/confirm`.
 
