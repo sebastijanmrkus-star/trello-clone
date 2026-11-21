@@ -1,8 +1,8 @@
-# Trello Clone
+# Active Tasks
 
 Next.js 15 (App Router) + Supabase (Postgres, Auth, Row Level Security).
 
-Live: https://trello-clone-smd.netlify.app
+Live: https://active-tasks.netlify.app
 
 ## Architecture
 The app uses Next.js 15 (React 19, TypeScript, Tailwind CSS) on Netlify: server components load each board's data, and client components handle the interactive board, including drag-and-drop with `@hello-pangea/dnd` and instant on-screen updates as each change is written to the database. Supabase provides Postgres storage and email/password sign-in, with Row Level Security so each user can only reach their own workspaces, boards, lists, cards, labels, checklists and comments, plus SQL functions for creating boards from templates and copying cards and lists.

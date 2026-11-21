@@ -1,3 +1,5 @@
+import { APP_NAME, LogoMark } from "./Logo";
+
 // Unsplash photo by Annie Spratt (free to use under the Unsplash License).
 const TEAM_PHOTO = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80";
 
@@ -21,14 +23,9 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
       <div className="relative flex w-full items-center justify-center overflow-y-auto p-4 lg:w-[480px] lg:shrink-0 lg:bg-[#f7f8f9]">
         <div className="my-auto w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow-xl">
-          <div className="flex items-center justify-center gap-2 text-[#0079bf]">
-            <span className="grid h-8 w-8 place-items-center rounded bg-[#0079bf] text-white">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
-                <rect x="4" y="4" width="7" height="14" rx="1.5" />
-                <rect x="13" y="4" width="7" height="9" rx="1.5" />
-              </svg>
-            </span>
-            <span className="text-xl font-bold">Trello Clone</span>
+          <div className="flex items-center justify-center gap-2 text-[#0c66e4]">
+            <LogoMark size="lg" />
+            <span className="text-xl font-bold">{APP_NAME}</span>
           </div>
           {children}
         </div>
