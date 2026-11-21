@@ -4,6 +4,7 @@ import { SearchBox } from "./SearchBox";
 import { CreateBoardButton } from "./CreateBoardDialog";
 import { UserMenu } from "./UserMenu";
 import { TeamSwitcher } from "./TeamSwitcher";
+import { APP_NAME, LogoMark } from "./Logo";
 
 export async function TopNav({ dark }: { dark?: boolean }) {
   const [user, workspaces, teams, current] = await Promise.all([getUser(), getWorkspaces(), getTeams(), getCurrentTeam()]);
@@ -15,13 +16,8 @@ export async function TopNav({ dark }: { dark?: boolean }) {
       }`}
     >
       <Link href="/" className="flex items-center gap-1.5 rounded px-1.5 py-1 font-bold hover:bg-black/5">
-        <span className="grid h-6 w-6 place-items-center rounded bg-[#0c66e4] text-white">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
-            <rect x="4" y="4" width="6.5" height="14" rx="1.5" />
-            <rect x="13.5" y="4" width="6.5" height="9" rx="1.5" />
-          </svg>
-        </span>
-        <span className="hidden sm:inline">Trello Clone</span>
+        <LogoMark />
+        <span className="hidden sm:inline">{APP_NAME}</span>
       </Link>
       <TeamSwitcher teams={teams} currentId={current?.id} dark={dark} />
 

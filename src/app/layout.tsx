@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trello Clone",
-  description: "Kanban boards backed by Supabase",
+  title: "Active Tasks",
+  description: "Team task boards: plan, assign and finish work together.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

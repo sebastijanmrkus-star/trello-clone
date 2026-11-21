@@ -36,7 +36,7 @@ export function TemplatesShowcase({ workspaces }: { workspaces: Workspace[] }) {
             <TemplateIcon className="h-5 w-5" /> Most popular templates
           </h2>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-gray-600">
-            <span>Get going faster with a template from the Trello Clone community or</span>
+            <span>Get going faster with a template from the Active Tasks community or</span>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as CategorySlug)}
