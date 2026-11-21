@@ -1,0 +1,6 @@
+# Build settings for Netlify, so a project builds the app correctly even when
+# it is not linked to GitHub (Netlify's Next.js runtime adds the server and
+# edge functions).
+[build]
+  command = "npm run build"
+  publish = ".next"
